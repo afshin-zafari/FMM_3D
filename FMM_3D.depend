@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1487715809 source:c:\afshin\fmm_3d\main.cpp
+	<iostream>
+	"fmm_3d.hpp"
+
+1487701939 c:\afshin\fmm_3d\fmm_3d.hpp
+	"types_3d.hpp"
+
+1487715863 c:\afshin\fmm_3d\types_3d.hpp
+	<vector>
+
+1487715894 source:c:\afshin\fmm_3d\compute_3d.cpp
+	"fmm_3d.hpp"
+
