@@ -13,7 +13,7 @@ class GeneralArray;
 struct Box{
   Point         cemter;
   int           level,index;
-  vector<Box*>  nf_int_list,ff_int_list;
+  vector<Box*>  nf_int_list,ff_int_list,children;
   GeneralArray  *I,*V;
 
   Box(int index_,int level_ ){

@@ -67,9 +67,9 @@ void compute_interpolation(){
         for(int m=0;m<box_count(lambda);m++){
             for(int j=0;j<K[lambda];j++){
                 Box b_m(m,lambda);
-                BoxList &ff=b_m.ff_int_list;
-                for(uint n=0;n< ff.size();n++){
-                    Box b_n(n,lambda+1);
+                BoxList &children=b_m.children;
+                for(uint n=0;n< children.size();n++){
+                    //Box &b_n=*children[n];
                     Kappa_hat k_hat(j,lambda);
                     F_far_tilde F_tilde_rhs(n,lambda+1,k_hat);//TODO kappa_hat in Martin's Lic. Is it Kappa_{j\lambda}^hat?
                     F_far_tilde F_tilde_lhs(m,lambda  ,k_hat);
@@ -106,9 +106,9 @@ void compute_green_interpolation(){
         for(int m=0;m<M[lambda];m++){
             for(int j=0;j<K[lambda];j++){
                 Box b_m(m,lambda);
-                BoxList &ff=b_m.ff_int_list;
-                for(uint n=0;n< ff.size();n++){
-                    Box           b_n         (n,lambda);
+                BoxList &children=b_m.children;
+                for(uint n=0;n< children.size();n++){
+                    //Box           &b_n=*children[n];
                     Kappa_hat     k_hat       (j,lambda  );
                     Kappa_hat     k_hat_higher(j,lambda+1);
                     Interpolation P           (lambda,lambda+1,k_hat);
