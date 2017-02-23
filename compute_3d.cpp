@@ -1,27 +1,38 @@
 #include "fmm_3d.hpp"
+namespace FMM_3D{
+
 int L_max,*K,*M;
+FMMContext *fmm_engine;
 int box_count(int level){return  M[level];}
+void add_task(DTBase *){}
 
 /*--------------------------------------------------------------------*/
-void MVP_ZI_to_V(GeneralMatrix &,GeneralArray &,GeneralArray &){
+void MVP_ZI_to_V(GeneralMatrix &Z,GeneralArray &I,GeneralArray &V){
+    fmm_engine->add_mvp_task(&Z,&V,&I);
 }
 /*--------------------------------------------------------------------*/
-void FF_FI_to_F_tilde(F_far &,GeneralArray&, F_far_tilde &){
+void FF_FI_to_F_tilde(F_far &F,GeneralArray&I, F_far_tilde &F_t){
+    fmm_engine->add_mvp_task(&F,&I,&F_t);
 }
 /*--------------------------------------------------------------------*/
-void FF_interpolation(Exponential,Interpolation,F_far_tilde, F_far_tilde){
+void FF_interpolation(Exponential &E,Interpolation &I,F_far_tilde &F1, F_far_tilde&F2){
+    fmm_engine->add_interpolation_task(&E,&I,&F1,&F2);
 }
 /*--------------------------------------------------------------------*/
-void FF_green(Translator ,F_far_tilde, Green){
+void FF_green(Translator &T,F_far_tilde&F, Green&G){
+    fmm_engine->add_green_translate_task(&T,&F,&G);
 }
 /*--------------------------------------------------------------------*/
-void FF_green_interpolation(Interpolation,Exponential,Green,Green ){
+void FF_green_interpolation(Interpolation&P,Exponential&E,Green&G1,Green &G2){
+    fmm_engine->add_green_interpolate_task(&P,&E,&G1,&G2);
 }
 /*--------------------------------------------------------------------*/
-void NF_receiving(Receiving,Green,GeneralArray){
+void NF_receiving(Receiving&R,Green&G,GeneralArray&V){
+    fmm_engine->add_receiving_task(&R,&G,&V);
 }
 /*--------------------------------------------------------------------*/
 void init(){
+    fmm_engine = new FMMContext;
     L_max = 1;
     K = new int [L_max];
     M = new int [L_max];
@@ -138,4 +149,5 @@ void compute_receiving(){
     for(int m=0;m<M[lambda];m++){
         box_NF_receiving(m,lambda);
     }
+}
 }
