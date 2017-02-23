@@ -2,7 +2,6 @@
 namespace FMM_3D{
 
 int L_max,*K,*M;
-FMMContext *fmm_engine;
 int box_count(int level){return  M[level];}
 void add_task(DTBase *){}
 
@@ -36,6 +35,8 @@ void init(){
     L_max = 1;
     K = new int [L_max];
     M = new int [L_max];
+    tree.Level[0]->boxes[0] = new Box(0,0);
+
 }
 /*--------------------------------------------------------------------*/
 void finalize(){
@@ -115,7 +116,7 @@ void compute_green(){
 void compute_green_interpolation(){
     for(int lambda=0; lambda<L_max-1; lambda ++){
         for(int m=0;m<M[lambda];m++){
-            for(int j=0;j<K[lambda];j++){
+            for(int j=0;j<K[lambda+1];j++){
                 Box b_m(m,lambda);
                 BoxList &children=b_m.children;
                 for(uint n=0;n< children.size();n++){

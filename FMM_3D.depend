@@ -6,9 +6,15 @@
 1487701939 c:\afshin\fmm_3d\fmm_3d.hpp
 	"types_3d.hpp"
 
-1487839097 c:\afshin\fmm_3d\types_3d.hpp
+1487859604 c:\afshin\fmm_3d\types_3d.hpp
 	<vector>
+	"types_dist.hpp"
 
-1487838706 source:c:\afshin\fmm_3d\compute_3d.cpp
+1487858864 source:c:\afshin\fmm_3d\compute_3d.cpp
+	"fmm_3d.hpp"
+
+1487859629 c:\afshin\fmm_3d\types_dist.hpp
+
+1487859427 source:c:\afshin\fmm_3d\types_3d.cpp
 	"fmm_3d.hpp"
 
