@@ -1,20 +1,31 @@
 # depslib dependency file v1.0
-1487837153 source:c:\afshin\fmm_3d\main.cpp
-	<iostream>
+1488129132 source:c:\afshin\fmm_3d\main.cpp
 	"fmm_3d.hpp"
 
 1487701939 c:\afshin\fmm_3d\fmm_3d.hpp
 	"types_3d.hpp"
 
-1487859604 c:\afshin\fmm_3d\types_3d.hpp
+1488132334 c:\afshin\fmm_3d\types_3d.hpp
+	<iostream>
 	<vector>
 	"types_dist.hpp"
 
-1487858864 source:c:\afshin\fmm_3d\compute_3d.cpp
+1488130592 source:c:\afshin\fmm_3d\compute_3d.cpp
 	"fmm_3d.hpp"
 
-1487859629 c:\afshin\fmm_3d\types_dist.hpp
+1487860433 c:\afshin\fmm_3d\types_dist.hpp
 
-1487859427 source:c:\afshin\fmm_3d\types_3d.cpp
+1487929069 source:c:\afshin\fmm_3d\types_3d.cpp
 	"fmm_3d.hpp"
+
+1488147019 source:c:\afshin\fmm_3d\util_3d.cpp
+	<cstring>
+	<assert.h>
+	"util_3d.hpp"
+
+1488133785 c:\afshin\fmm_3d\util_3d.hpp
+	<fstream>
+	<sstream>
+	<cstdlib>
+	"types_3d.hpp"
 

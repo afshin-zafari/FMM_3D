@@ -1,0 +1,19 @@
+Levels 2 
+Level 2, Boxes 2
+Level 2, Box 1, 1.0, 1.0, 1.0, 1.14
+Level 2, Box 2, 1.0, 3.0, 3.0, 2.28
+Level 1, Boxes 2
+Level 1, Box 1, 1.0, 1.0, 1.0, 1.14
+Level 1, Box 2, 1.0, 3.0, 3.0, 2.28
+Level 1, Box 1, Nears 4, 2, 3, 4, 5
+Level 1, Box 1, Children 3, 1, 2, 3
+Level 1, Box 1, Fars	2, 1, 4
+Level 1, Box 1, I_vect 20, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0
+Level 1, Box 1, Kappas 8 
+Level 1, Box 1, Kappa 1, x 2, 1.0, .01
+Level 1, Box 1, Kappa 1, y 2, 1.0, .01
+Level 1, Box 1, Kappa 1, z 2, 1.0, .01
+Level 1, Box 1,	Translators 7
+Level 1, Box 1,	Translator 1, x 10, 20, 30 
+			
+

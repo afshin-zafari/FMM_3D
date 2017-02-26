@@ -1,5 +1,7 @@
 #ifndef FMM_3D_HPP
 #define FMM_3D_HPP
+
+#include <iostream>
 #include <vector>
 #include "types_dist.hpp"
 
@@ -15,11 +17,13 @@ namespace FMM_3D{
     /*--------------------------------------------------------------------*/
     struct Box: public DTBase{
       Point         center;
+      double        diagonal;
       int           level,index;
       vector<Box*>  nf_int_list,ff_int_list,children;
       GeneralArray  *I,*V;
 
       Box(int index_,int level_ );
+      Box(){}
 
     };
     typedef vector<Box*> BoxList;
@@ -100,11 +104,24 @@ namespace FMM_3D{
         GList G;
         RList R;
     };
+    /*--------------------------------------------------------------------*/
     typedef vector<LevelBase*> LevelList;
-    struct Tree{
-        LevelList Level;
+    class Tree{
+        public:
+            LevelList Level;
+            ~Tree(){
+                cout << "Tree dtor"<< endl;
+            }
     };
-    extern Tree tree;
+    extern Tree *tree;
+    /*--------------------------------------------------------------------*/
+    template<typename T>
+    uint set_length(vector<T*> &L,int n){
+        for(int i=0;i<n;i++){
+            L.push_back(new T);
+        }
+        return L.size();
+    }
     /*--------------------------------------------------------------------*/
     // Z,V,I,F,Ft,T,P,E,G,R,Kpa
     /*=================================================================================*/

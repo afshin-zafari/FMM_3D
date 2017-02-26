@@ -35,7 +35,11 @@
 		<Unit filename="compute_3d.cpp" />
 		<Unit filename="fmm_3d.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="types_3d.cpp" />
 		<Unit filename="types_3d.hpp" />
+		<Unit filename="types_dist.hpp" />
+		<Unit filename="util_3d.cpp" />
+		<Unit filename="util_3d.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

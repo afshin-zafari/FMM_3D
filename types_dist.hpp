@@ -18,11 +18,13 @@ namespace FMM_3D{
     class FMMContext{
     public:
         enum TASKS{ MVP,Interpolation, Green_Translate, Green_Interpolate, Receiving};
-        void add_mvp_task(DTBase *M,DTBase *v, DTBase *x){}
-        void add_interpolation_task(DTBase *E,DTBase *I,DTBase * f1,DTBase *f2){}
-        void add_green_translate_task(DTBase *T,DTBase *F,DTBase *G){}
-        void add_green_interpolate_task(DTBase *P, DTBase *E, DTBase *G1 , DTBase *G2){}
-        void add_receiving_task(DTBase *R, DTBase *G, DTBase *V){}
+
+        void add_mvp_task              (DTBase *M, DTBase *v, DTBase *x             ){}
+        void add_interpolation_task    (DTBase *E, DTBase *I, DTBase *f1, DTBase *f2){}
+        void add_green_translate_task  (DTBase *T, DTBase *F, DTBase *G             ){}
+        void add_green_interpolate_task(DTBase *P, DTBase *E, DTBase *G1, DTBase *G2){}
+        void add_receiving_task        (DTBase *R, DTBase *G, DTBase *V             ){}
+
         void runKernels(DTTask *t){
             switch(t->key){
             case MVP:

@@ -1,5 +1,5 @@
-#include <iostream>
 #include "fmm_3d.hpp"
+
 using namespace FMM_3D;
 void FMM_main(){
     init();
@@ -11,6 +11,7 @@ void FMM_main(){
     compute_receiving();
     finalize();
 }
+using namespace std;
 int main()
 {
     FMM_main();
