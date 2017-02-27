@@ -10,7 +10,7 @@ namespace FMM_3D{
         private:
             ifstream f;
             string file_name,line;
-            int level, kappa_index, box_index;
+            int line_no;;
             string::size_type pos;
 
         public:
@@ -28,6 +28,7 @@ namespace FMM_3D{
             void import_kappa            ();
             void import_translators_count();
             void import_translator       ();
+            void import_I_vect           ();
 
     };
     void import_setup();

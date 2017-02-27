@@ -1,7 +1,8 @@
 #include <cstring>
 #include <assert.h>
 #include "util_3d.hpp"
-#define EXPECTED(x) assert(x)
+#define EXPECTED(x) if ( !(x)) { cout << "Assertion failed:"<< #x << endl << "The input line " << line_no << ":"<< endl << line << endl;}
+#define EXPECTED_MSG(x,m) if ( !(x)) { cout << "Assertion failed:\n"<< (m).rdbuf() << endl << "The input line " << line_no << ":"<< endl << line << endl;}
 namespace FMM_3D{
     Importer::Importer(string fn){
         file_name = fn;
@@ -57,13 +58,14 @@ namespace FMM_3D{
         stringstream ss;
         string Level,comma,Box;
         ss.str(line);
-        //Level 2, Box 1, 1.0,1.0,1.0,1.14
+        //Level 2, Box 1, 1.0, 1.0, 1.0, 1.14
         ss >> Level >> l >> comma >> Box >> b >> comma >> x >> comma >> y >> comma >> z >> comma >> d ;
         EXPECTED(trim(Level)=="Level");
         EXPECTED(trim(Box)=="Box");
         EXPECTED(trim(comma)==",");
         EXPECTED(l<=L_max);
         EXPECTED(l>=1);
+        EXPECTED(d>1e-9);
         EXPECTED((uint)b<=tree->Level[l-1]->boxes.size());
         FMM_3D::Box *box=tree->Level[l-1]->boxes[b-1];
         box->center.x = x;
@@ -72,11 +74,36 @@ namespace FMM_3D{
         box->diagonal = d;
     }
     /*------------------------------------------------------*/
-    void Importer::import_near_boxes(){}
+    void Importer::import_child_boxes(){
+        int l,b,c;
+        stringstream ss;
+        string Level,comma,Box,Children;
+        ss.str(line);
+        //Level 2, Box 1, 1.0,1.0,1.0,1.14
+        ss >> Level >> l >> comma >> Box >> b >> comma >> Children >> c >> comma;
+        EXPECTED(trim(Level)=="Level");
+        EXPECTED(trim(Box)=="Box");
+        EXPECTED(trim(comma)==",");
+        EXPECTED(l<=L_max);
+        EXPECTED(l>=1);
+        EXPECTED(c>=1);
+
+        EXPECTED((uint)b<=tree->Level[l-1]->boxes.size());
+        FMM_3D::Box *box=tree->Level[l-1]->boxes[b-1];
+        int child;
+        for(int i=0;i<c;i++){
+            stringstream err;
+            ss>> child >> comma;
+            EXPECTED_MSG((uint)child<=tree->Level[l]->boxes.size(), err << endl << " Child index " << child << " exceeds the limit." << endl);
+            FMM_3D::Box *ChildBox=tree->Level[l]->boxes[child-1];
+            box->children.push_back(ChildBox);
+        }
+
+    }
     /*------------------------------------------------------*/
     void Importer::import_far_boxes(){}
     /*------------------------------------------------------*/
-    void Importer::import_child_boxes(){}
+    void Importer::import_near_boxes(){}
     /*------------------------------------------------------*/
     void Importer::import_charges(){}
     /*------------------------------------------------------*/
@@ -87,10 +114,13 @@ namespace FMM_3D{
     void Importer::import_translators_count(){}
     /*------------------------------------------------------*/
     void Importer::import_translator(){}
+    void Importer::import_I_vect(){}
     /*------------------------------------------------------*/
     void Importer::import(){
+        line_no=0;
         while ( !f.eof()){
             getline(f,line);
+            line_no++;
             if (line.find("Levels") != string::npos){
                 import_levels_count();
                 continue;
@@ -127,7 +157,11 @@ namespace FMM_3D{
                 import_translator();
                 continue;
             }
-            if (line.find("Box") != string::npos){ // this test should be the last. Since all other lines have a "Box".
+             if (line.find("I_vect") != string::npos){
+                import_I_vect();
+                continue;
+            }
+           if (line.find("Box") != string::npos){ // this test should be the last. Since all other lines have a "Box".
                 import_box();
                 continue;
             }
