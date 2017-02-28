@@ -7,12 +7,12 @@ namespace FMM_3D{
     void import_setup();
     void export_setup();
     /*--------------------------------------------------------------------*/
-    void MVP_ZI_to_V(GeneralMatrix &Z,GeneralArray &I,GeneralArray &V){
+    void MVP_ZI_to_V(Z_near &Z,GeneralArray &I,GeneralArray &V){
         fmm_engine->add_mvp_task(&Z,&V,&I);
     }
     /*--------------------------------------------------------------------*/
     void FF_FI_to_F_tilde(F_far &F,GeneralArray&I, F_far_tilde &F_t){
-        fmm_engine->add_mvp_task(&F,&I,&F_t);
+        fmm_engine->add_farf_task(&F,&I,&F_t);
     }
     /*--------------------------------------------------------------------*/
     void FF_interpolation(Exponential &E,Interpolation &I,F_far_tilde &F1, F_far_tilde&F2){
@@ -45,6 +45,7 @@ namespace FMM_3D{
     /*--------------------------------------------------------------------*/
     void finalize(){
         cout << __FUNCTION__ << " " << __LINE__ << endl;
+        fmm_engine->export_tasks("tasks.txt");
         delete [] K;
         delete [] M;
         delete tree;
@@ -55,7 +56,7 @@ namespace FMM_3D{
         cout << __FUNCTION__ << " " << __LINE__ << endl;
         int L  = L_max;
         for (int k=0;k< M[L-1];k++ ){
-            Box b_k(k,L);
+            Box b_k = get_box(k,L);
             BoxList nf = b_k.nf_int_list;
             for ( uint i=0;i< nf.size();i++){
               Box &b_l = *nf[i];
@@ -72,7 +73,7 @@ namespace FMM_3D{
         cout << __FUNCTION__ << " " << __LINE__ << endl;
         int L  = L_max;
         for (int m=0;m< box_count(L);m++ ){
-            Box b_m(m,L);
+            Box b_m= get_box(m,L);
             for ( int j=0;j< K[L_max-1];j++){
               Kappa_hat k_hat(j,L);
               F_far F(b_m,L,k_hat);
@@ -88,7 +89,7 @@ namespace FMM_3D{
         for(int lambda=L_max-1; lambda>=L_min; lambda --){
             for(int m=0;m<box_count(lambda);m++){
                 for(int j=0;j<kappa_count(lambda);j++){
-                    Box b_m(m,lambda);
+                    Box b_m = get_box(m,lambda);
                     BoxList &children=b_m.children;
                     for(uint n=0;n< children.size();n++){
                         //Box &b_n=*children[n];
@@ -109,10 +110,10 @@ namespace FMM_3D{
         for(int lambda=L_min; lambda<=L_max; lambda ++){
             for(int m=0;m<box_count(lambda);m++){
                 for(int j=0;j<kappa_count(lambda);j++){
-                    Box b_m(m,lambda);
+                    Box b_m=get_box(m,lambda);
                     BoxList &ff=b_m.ff_int_list;
                     for(uint n=0;n< ff.size();n++){
-                        Box          b_n(n,lambda);
+                        Box          b_n=get_box(n,lambda);
                         Kappa_hat    k_hat(j,lambda);
                         F_far_tilde  F_tilde(n,lambda,k_hat);
                         Translator   T(j,m,n,lambda);
@@ -129,7 +130,7 @@ namespace FMM_3D{
         for(int lambda=L_min; lambda<=L_max-1; lambda ++){
             for(int m=0;m<box_count(lambda);m++){
                 for(int j=0;j<kappa_count(lambda+1);j++){
-                    Box b_m(m,lambda);
+                    Box b_m=get_box(m,lambda);
                     BoxList &children=b_m.children;
                     for(uint n=0;n< children.size();n++){
                         //Box           &b_n=*children[n];
@@ -149,7 +150,7 @@ namespace FMM_3D{
     /*--------------------------------------------------------------------*/
     void box_NF_receiving(int m ,int lambda){
         cout << __FUNCTION__ << " " << __LINE__ << endl;
-        Box b_m(m,lambda);
+        Box b_m=get_box(m,lambda);
         for(int j=0;j<K[lambda-1];j++){
             V_vect    V(b_m);
             Kappa_hat k_hat(j,lambda);

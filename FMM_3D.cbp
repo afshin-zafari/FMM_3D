@@ -38,6 +38,7 @@
 		<Unit filename="main.cpp" />
 		<Unit filename="types_3d.cpp" />
 		<Unit filename="types_3d.hpp" />
+		<Unit filename="types_dist.cpp" />
 		<Unit filename="types_dist.hpp" />
 		<Unit filename="util_3d.cpp" />
 		<Unit filename="util_3d.hpp" />

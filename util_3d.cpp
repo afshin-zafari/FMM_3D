@@ -84,6 +84,7 @@ namespace FMM_3D{
         box->center.z = z;
         box->diagonal = d;
         box->index    = b;
+        box->level    = l;
     }
     /*------------------------------------------------------*/
     void Importer::import_child_boxes(){
