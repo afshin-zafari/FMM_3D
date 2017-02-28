@@ -5,6 +5,7 @@ namespace FMM_3D{
     int box_count(int level){return  M[level-1];}
     int kappa_count(int level){return  K[level-1];}
     void import_setup();
+    void export_setup();
     /*--------------------------------------------------------------------*/
     void MVP_ZI_to_V(GeneralMatrix &Z,GeneralArray &I,GeneralArray &V){
         fmm_engine->add_mvp_task(&Z,&V,&I);
@@ -34,19 +35,12 @@ namespace FMM_3D{
         fmm_engine = new FMMContext;
         tree = new Tree;
         import_setup();
+        export_setup();
         cout << "L max = " << L_max << endl;
         L_max = 1;
         L_min = 1;
-        K = new int [L_max];
-        M = new int [L_max];
         K[L_max-1]=1;
         M[L_max-1]=1;
-
-        cout << "Here " << endl;
-        //int n=set_length(tree->Level,3);
-
-    //    tree->Level[0]->boxes[0] = new Box(0,0);
-
     }
     /*--------------------------------------------------------------------*/
     void finalize(){

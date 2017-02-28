@@ -9,7 +9,7 @@ typedef unsigned int uint;
 
 using namespace std;
 namespace FMM_3D{
-    extern int L_max;
+    extern int L_max,L_min,*K,*M;
     /*--------------------------------------------------------------------*/
     struct Point { double x,y,z;};
     /*--------------------------------------------------------------------*/
@@ -23,7 +23,9 @@ namespace FMM_3D{
       GeneralArray  *I,*V;
 
       Box(int index_,int level_ );
-      Box(){}
+      Box(){
+          I = V= NULL;
+      }
 
     };
     typedef vector<Box*> BoxList;
@@ -32,7 +34,11 @@ namespace FMM_3D{
       long M,N;
     public:
       GeneralArray(Box &b){}
-      GeneralArray(int  _M, int N_){}
+      GeneralArray(int M_, int N_):M(M_),N(N_){}
+      void set_element(int i, int j , double d){}
+      double get_element(int i, int j){return 0.0;}
+      int rows_count(){return M;}
+      int cols_count(){return N;}
     };
     typedef GeneralArray I_vect;
     typedef GeneralArray V_vect;
@@ -103,6 +109,11 @@ namespace FMM_3D{
         TList T;
         GList G;
         RList R;
+        double *K_x,*K_y,*K_z;
+        int K_rows,K_cols;
+        LevelBase(){
+            K_rows = K_cols = 0;
+        }
     };
     /*--------------------------------------------------------------------*/
     typedef vector<LevelBase*> LevelList;

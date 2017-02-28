@@ -23,14 +23,36 @@ namespace FMM_3D{
             void import_near_boxes       ();
             void import_far_boxes        ();
             void import_child_boxes      ();
-            void import_charges          ();
             void import_kappas_count     ();
-            void import_kappa            ();
+            void import_kappa_x          ();
+            void import_kappa_y         ();
+            void import_kappa_z          ();
             void import_translators_count();
             void import_translator       ();
             void import_I_vect           ();
+            void import_level_box(stringstream &,int &,int &);
 
     };
+    /*-----------------------------------------------------------*/
+    class Exporter{
+         ofstream f;
+    public:
+        Exporter(string fn);
+        ~Exporter();
+        void export_levels      ();
+        void export_boxes       (int l);
+        void export_box_children(int l, int b);
+        void export_box_nears   (int l, int b);
+        void export_box_fars    (int l, int b);
+        void export_box_I_vect  (int l, int b);
+        void export_kappas_x    (int l);
+        void export_kappas_y    (int l);
+        void export_kappas_z    (int l);
+        void export_all         ();
+
+    };
+    /*-----------------------------------------------------------*/
     void import_setup();
+    void export_setup();
 }
 #endif // UTIL_3D_HPP
