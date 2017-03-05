@@ -4,18 +4,32 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-
+#define COMPLEX
 typedef unsigned int uint;
 
 using namespace std;
 namespace FMM_3D{
     extern int L_max,L_min,*K,*M;
     typedef long DTHandle;
+
+    #ifdef COMPLEX
+        struct ElementType{
+            double real,imag;
+            ElementType(double r, double i):real(r),imag(i){}
+            ElementType(){}
+            friend istream &operator>>( istream &ss, ElementType &e){return ss; }
+            friend ostream &operator<<(ostream &o, ElementType e){return o;}
+            ElementType & operator = (ElementType rhs){real = rhs.real; imag=rhs.imag;return *this;}
+        };
+    #else
+        typedef double ElementType;
+    #endif
     /*--------------------------------------------------------------------*/
+    typedef enum dt_types{Box_type,Z,I,V,Kappa_type,F,F_tilde,G,R,T,E,Interpolation_type}DTTypes;
     class DTBase{
     public:
         int M,N,lead_dim,host,type,g_index;
-        double *mem;
+        ElementType *mem; //todo
         DTHandle *handle;
         string name;
         void export_it(fstream &f){}
@@ -31,9 +45,7 @@ namespace FMM_3D{
       int           level,index;
       vector<Box*>  nf_int_list,ff_int_list,children;
       GeneralArray  *I,*V;
-
-      Box(){I = V= NULL;name.assign("Box");}
-
+      Box();
     };
     typedef vector<Box*> BoxList;
     Box &get_box(int index,int level);
@@ -42,23 +54,23 @@ namespace FMM_3D{
       long M,N;
       int level,index;
     public:
-        GeneralArray(Box &b){
-            level = b.level;
-            index = b.index;
-        }
-        GeneralArray(int M_, int N_):M(M_),N(N_){}
-        void set_element(int i, int j , double d){}
-        double get_element(int i, int j){return 0.0;}
-        int rows_count(){return M;}
-        int cols_count(){return N;}
-        void export_it(fstream &f){
-            f << name << " "
-              << "Box(" << index << "," << level << ")";
-            DTBase::export_it(f);
-        }
+                    GeneralArray(Box &b);
+                    GeneralArray(){}
+                    GeneralArray(int M_, int N_):M(M_),N(N_){}
+        void        set_element(int i, int j , ElementType d);
+        ElementType get_element(int i, int j);
+        int         rows_count();
+        int         cols_count();
+        void        export_it(fstream &f);
     };
-    typedef GeneralArray I_vect;
-    typedef GeneralArray V_vect;
+    class I_vect : public GeneralArray {
+    public:
+        I_vect(Box &b);
+    };
+    class V_vect : public GeneralArray {
+    public:
+        V_vect(Box &b);
+    };
     /*--------------------------------------------------------------------*/
     class GeneralMatrix: public DTBase{
     public:
@@ -69,55 +81,26 @@ namespace FMM_3D{
     public:
         int l1,i1,l2,i2;
         Z_near(){}
-        Z_near ( Z_near &z){
-            l1 = z.l1;
-            i1=z.i1;
-            l2=z.l2;
-            i2=z.i2;
-        }
-        Z_near(Box b1, Box b2){
-          name.assign("Z_near");
-          l1 = b1.level;
-          i1 = b1.index;
-          l2 = b2.level;
-          i2 = b2.index;
-        }
-        void export_it(fstream &f){
-            f << name << " "
-              << "Box(" << i1 << "," << l1 << ")->"
-              << "Box(" << i2 << "," << l2 << ")" ;
-              DTBase::export_it(f);
-        }
-
+        Z_near(Box b1, Box b2);
+        void export_it(fstream &f);
     };
     typedef vector<Z_near*> ZList;
     /*--------------------------------------------------------------------*/
     class Kappa_hat: public DTBase{
         int j,level;
     public:
-         Kappa_hat(int j_, int level_):j(j_),level(level_){
-             name.assign("Kappa");
-         }
-         void export_it(fstream &f){
-             f << name << "_{"
-                << j << "," << level << "}";
-         }
+         Kappa_hat(int j_, int level_);
+         void export_it(fstream &f);
     };
     typedef vector<Kappa_hat*> KappaList;
     /*--------------------------------------------------------------------*/
     class F_far: public DTBase{
-        Box b;
-        int level;
-        Kappa_hat k;
+        Box        b;
+        int        level;
+        Kappa_hat  k;
     public:
-        F_far(Box &b_,int level_,Kappa_hat &k_):b(b_),level(level_),k(k_){name.assign("F");}
-         void export_it(fstream &f){
-             f << name << "_{"
-                << b.index << "," << level <<"}(" ;
-                k.export_it(f);
-                f << ")";
-                DTBase::export_it(f);
-         }
+        F_far(Box &b_,int level_,Kappa_hat &k_);
+         void export_it(fstream &f);
     };
     typedef vector<F_far*> FList;
     /*--------------------------------------------------------------------*/
@@ -125,14 +108,8 @@ namespace FMM_3D{
         int m,level;
         Kappa_hat k;
     public:
-        F_far_tilde(int m_, int level_,Kappa_hat &k_):m(m_),level(level_),k(k_){name.assign("F~");}
-        void export_it(fstream &f){
-             f << name << "_{"
-                << m << "," << level <<"}(" ;
-                k.export_it(f);
-                f << ")";
-                DTBase::export_it(f);
-         }
+        F_far_tilde(int m_, int level_,Kappa_hat &k_);
+        void export_it(fstream &f);
     };
     typedef vector<F_far_tilde *> F_tilde_List;
     /*--------------------------------------------------------------------*/
@@ -140,89 +117,60 @@ namespace FMM_3D{
         int from, to;
         Kappa_hat k;
     public:
-        Interpolation(int from_, int to_, Kappa_hat &k_):from(from_),to(to_),k(k_){name.assign("Interp");}
-        void export_it(fstream &f){
-             f << name << "_"
-                << from << "^" << to << "(";
-                k.export_it(f);
-                f << ")";
-                DTBase::export_it(f);
-         }
-
+        Interpolation(int from_, int to_, Kappa_hat &k_);
+        void export_it(fstream &f);
     };
     /*--------------------------------------------------------------------*/
     class Exponential: public DTBase{
         int i1,l1,i2,l2,i3,l3;
     public:
-        Exponential( int j , int level, int box_idx1, int level1, int box_idx2, int level2):
-            i1(j) , l1(level), i2(box_idx1), l2(level1), i3(box_idx2), l3(level2){name.assign("Exponent");}
-        void export_it(fstream &f){
-             f << name << "_{"
-                << i1 << "," << l1 << "}"
-                << "Box(" << i2 <<"," << l2 << ")=>"
-                << "Box(" << i3 <<"," << l3 << ")";
-                DTBase::export_it(f);
-         }
+        Exponential( int j, int lv, int b_idx1, int lv1, int b_idx2, int lv2);
+        void export_it(fstream &f);
     };
     /*--------------------------------------------------------------------*/
     class Translator: public DTBase{
         int i1,l1,i2,l2,i3,l3;
     public:
-        Translator (int j, int box_idx1, int box_idx2, int level):
-            i1(j) , l1(level), i2(box_idx1), i3(box_idx2){name.assign("Translator");}
-
-        void export_it(fstream &f){
-             f << name << "_{"
-                << i1 << "," << l1 << "}"
-                << "Box(" << i2 <<"," << l2 << ")=>"
-                << "Box(" << i3 <<"," << l3 << ")";
-                DTBase::export_it(f);
-         }    };
+        Translator (int j, int box_idx1, int box_idx2, int level);
+        void export_it(fstream &f);
+     };
     typedef vector<Translator*> TList;
     /*--------------------------------------------------------------------*/
     class Green: public DTBase{
         int m, level;
-        Kappa_hat &k;
+        Kappa_hat k;
     public:
-        Green(int m_, int level_, Kappa_hat &k_):m(m_),level(level_),k(k_){name.assign("G");}
-        void export_it(fstream &f){
-             f << name << "_{"
-                << m << "," << level <<"}(" ;
-                k.export_it(f);
-                f << ")";
-                DTBase::export_it(f);
-         }
+        Green(int m_, int level_, Kappa_hat &k_);
+        void export_it(fstream &f);
     };
     typedef vector<Green*> GList;
     /*--------------------------------------------------------------------*/
     class  Receiving: public DTBase{
+        Box b;
         Kappa_hat k;
     public:
-        Receiving(Kappa_hat &k_):k(k_){name.assign("R");}
+        Receiving(Box b_,Kappa_hat &k_);
+        void export_it(fstream &);
     };
     typedef vector<Receiving*> RList;
     /*--------------------------------------------------------------------*/
     struct LevelBase{
-        BoxList boxes;
-        FList F;
-        F_tilde_List Ft;
-        TList T;
-        GList G;
-        RList R;
-        double *K_x,*K_y,*K_z;
-        int K_rows,K_cols;
-        LevelBase(){
-            K_rows = K_cols = 0;
-        }
+        BoxList         boxes;
+        FList           F;
+        F_tilde_List    Ft;
+        TList           T;
+        GList           G;
+        RList           R;
+        ElementType     *K_x,*K_y,*K_z;
+        int             K_rows,K_cols;
+
+        LevelBase(){K_rows = K_cols = 0;}
     };
     /*--------------------------------------------------------------------*/
     typedef vector<LevelBase*> LevelList;
     class Tree{
         public:
             LevelList Level;
-            ~Tree(){
-                cout << "Tree dtor"<< endl;
-            }
     };
     extern Tree *tree;
     /*--------------------------------------------------------------------*/
@@ -234,7 +182,6 @@ namespace FMM_3D{
         return L.size();
     }
     /*--------------------------------------------------------------------*/
-    // Z,V,I,F,Ft,T,P,E,G,R,Kpa
     /*=================================================================================*/
     int box_count(int level);
     void init();

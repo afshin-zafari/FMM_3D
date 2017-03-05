@@ -25,11 +25,14 @@ namespace FMM_3D{
             void import_child_boxes      ();
             void import_kappas_count     ();
             void import_kappa_x          ();
-            void import_kappa_y         ();
+            void import_kappa_y          ();
             void import_kappa_z          ();
             void import_translators_count();
             void import_translator       ();
             void import_I_vect           ();
+            void import_Z_near           ();
+            void import_receiving        ();
+            void import_far_field        ();
             void import_level_box(stringstream &,int &,int &);
 
     };

@@ -155,9 +155,9 @@ namespace FMM_3D{
         ss.str(line);
         string Level, Kappas, comma;
         ss >> Level >> l >> comma >> Kappas >> nx >> comma >> ny;
-        tree->Level[l-1]->K_x = new double [ny*nx];
-        tree->Level[l-1]->K_y = new double [ny*nx];
-        tree->Level[l-1]->K_z = new double [ny*nx];
+        tree->Level[l-1]->K_x = new ElementType [ny*nx];
+        tree->Level[l-1]->K_y = new ElementType [ny*nx];
+        tree->Level[l-1]->K_z = new ElementType [ny*nx];
         tree->Level[l-1]->K_rows = ny;
         tree->Level[l-1]->K_cols = nx;
         K[l-1]=nx*ny;
@@ -175,7 +175,7 @@ namespace FMM_3D{
         EXPECTED_MSG((c == (nx*ny)), err << "Number of Kappas in x grid are not correct." );
         for (int i=0; i < ny ; i++){
             for(int j=0; j< nx; j++){
-                double d;
+                ElementType d;
                 ss >> comma >> d ;
                 EXPECTED(trim(comma) == ",");
                 tree->Level[l-1]->K_x[i+j*ny]=d;
@@ -195,7 +195,7 @@ namespace FMM_3D{
         EXPECTED_MSG((c == (nx*ny)), err << "Number of Kappas in y grid are not correct." );
         for (int i=0; i < ny ; i++){
             for(int j=0; j< nx; j++){
-                double d;
+                ElementType d;
                 ss >> comma >> d ;
                 EXPECTED(trim(comma) == ",");
                 tree->Level[l-1]->K_y[i+j*ny]=d;
@@ -215,7 +215,7 @@ namespace FMM_3D{
         EXPECTED_MSG((c == (nx*ny)), err << "Number of Kappas in z grid are not correct." );
         for (int i=0; i < ny ; i++){
             for(int j=0; j< nx; j++){
-                double d;
+                ElementType d;
                 ss >> comma >> d ;
                 EXPECTED(trim(comma) == ",");
                 tree->Level[l-1]->K_z[i+j*ny]=d;
@@ -227,6 +227,12 @@ namespace FMM_3D{
     /*------------------------------------------------------*/
     void Importer::import_translator(){}
     /*------------------------------------------------------*/
+    void Importer::import_Z_near(){}
+    /*------------------------------------------------------*/
+    void Importer::import_receiving(){}
+    /*------------------------------------------------------*/
+    void Importer::import_far_field(){}
+    /*------------------------------------------------------*/
     void Importer::import_I_vect(){
         int l,b,n;
         stringstream ss;
@@ -236,7 +242,7 @@ namespace FMM_3D{
         FMM_3D::Box * box = tree->Level[l-1]->boxes[b-1];
         box->I = new GeneralArray(n,1);
         for(int i=0;i<n;i++){
-            double d;
+            ElementType d;
             ss >> comma >> d ;
             box->I->set_element(i, 0, d);
         }
@@ -294,6 +300,18 @@ namespace FMM_3D{
             }
              if (line.find("I_vect") != string::npos){
                 import_I_vect();
+                continue;
+            }
+            if (line.find("Z_near") != string::npos){
+                import_Z_near();
+                continue;
+            }
+            if (line.find("Receiving") != string::npos){
+                import_receiving();
+                continue;
+            }
+            if (line.find("FarField") != string::npos){
+                import_far_field();
                 continue;
             }
            if (line.find("Box") != string::npos){ // this test should be the last. Since all other lines have a "Box".

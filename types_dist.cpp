@@ -15,53 +15,53 @@ namespace FMM_3D{
     /*----------------------------------------------------*/
     void MVPTask::export_it(fstream &f){
         f << name << "\t\t";
-        A.export_it(f);
-        //x->export_it(f);
-        //y->export_it(f);
+        A.export_it(f); f << "\t\t";
+        x.export_it(f); f << "\t\t";
+        y.export_it(f); f << "\t\t";
         f << endl;
     }
     /*----------------------------------------------------*/
     void GreenInterpTask::export_it(fstream &f){
         string tabs("\t\t");
-        f << name << tabs
-            << args[0] << tabs
-            << args[1] << tabs
-            << args[2] << tabs
-            << args[3] << endl;
+        f << name << tabs;
+         P.export_it(f); f << tabs;
+         E.export_it(f); f << tabs;
+        G1.export_it(f); f << tabs;
+        G2.export_it(f); f << endl;
     }
     /*----------------------------------------------------*/
     void GreenTransTask::export_it(fstream &f){
         string tabs("\t\t");
-        f << name << tabs
-            << args[0] << tabs
-            << args[1] << tabs
-            << args[2] << endl;
+        f << name << tabs;
+        T.export_it(f); f << tabs;
+        F.export_it(f); f << tabs;
+        G.export_it(f); f << endl;
     }
     /*----------------------------------------------------*/
     void ReceivingTask::export_it(fstream &f){
         string tabs("\t\t");
-        f << name << tabs
-            << args[0]->name << " " << tabs
-            << args[1] << tabs
-            << args[2] << endl;
+        f << name << tabs;
+        R.export_it(f); f << tabs;
+        G.export_it(f); f << tabs;
+        V.export_it(f); f << endl;
     }
     /*----------------------------------------------------*/
     void InterpTask::export_it(fstream &f){
         string tabs("\t\t");
-        f << name << tabs
-            << args[0] << tabs
-            << args[1] << tabs
-            << args[2] << tabs
-            << args[3] << endl;
+        f << name << tabs;
+        E.export_it(f); f << tabs;
+        I.export_it(f); f << tabs;
+        f1.export_it(f); f << tabs;
+        f2.export_it(f);
+        f<< endl;
     }
     /*----------------------------------------------------*/
     void FarFieldTask::export_it(fstream &f){
         string tabs("\t\t");
-        f << name << tabs
-            << args[0] << tabs
-            << args[1] << tabs
-            << args[2] << tabs
-            << args[3] << endl;
+        f << name << tabs;
+          F.export_it(f); f << tabs;
+          I.export_it(f); f << tabs;
+        F_t.export_it(f); f << endl;
     }
     /*----------------------------------------------------*/
     void FMMContext::export_tasks(string fn){
@@ -70,14 +70,7 @@ namespace FMM_3D{
         f.open(fn,fstream::out);
         for ( it= tasks.begin();it != tasks.end();it++){
             DTTask *t = *it;
-            switch(t->key){
-            case MVP:
-                MVPTask *mt=static_cast<MVPTask*>(t);
-                mt->export_it(f);
-                break;
-            }
-
-
+            t->export_it(f);
         }
         f.close();
     }

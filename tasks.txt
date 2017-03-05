@@ -1,4 +1,2 @@
-MVP		Z_near Box(1,1)->Box(1,1)
-MVP		Z_near Box(1,1)->Box(2,1)
-MVP		Z_near Box(1,1)->Box(2,1)
-MVP		Z_near Box(1,1)->Box(1,1)
+Receiving		F_{2,1}(Kappa_{-1,1})		I_vect Box(2,1)		F~_{1,1}(Kappa_{-1,1})
+Receiving				G_{1,1}(Kappa_{-1,1})		V_vect Box(2,1)

@@ -1,5 +1,4 @@
 #include "fmm_3d.hpp"
-
 using namespace FMM_3D;
 void FMM_main(){
     init();
