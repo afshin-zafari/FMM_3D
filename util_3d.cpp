@@ -1,6 +1,7 @@
 #include <cstring>
 #include <assert.h>
 #include "util_3d.hpp"
+#include "setup.h"
 #define EXPECTED(x) if ( !(x)) { cout << "Assertion failed:"<< #x << endl << "The input line " << line_no << ":"<< endl << line << endl;}
 #define EXPECTED_MSG(x,m) if ( !(x)) { cout << "Assertion failed:\n"<< (m).rdbuf() << endl << "The input line " << line_no << ":"<< endl << line << endl;}
 namespace FMM_3D{
@@ -227,11 +228,57 @@ namespace FMM_3D{
     /*------------------------------------------------------*/
     void Importer::import_translator(){}
     /*------------------------------------------------------*/
-    void Importer::import_Z_near(){}
+    void Importer::import_Z_near(){
+        stringstream ss;
+        int b1,b2,ny,nx;
+        string Box1,Box2, comma, Size;
+        ss.str(line);
+        ss >> Box1 >> b1 >> comma >> Box2 >> b2 >> comma >> Size >> ny >> nx ;
+        Z_near z(b1,b2);
+        z.set_size(ny,nx);
+        for (int i=0; i < ny ; i++){
+            for(int j=0; j< nx; j++){
+                ElementType d;
+                ss >> comma >> d ;
+                EXPECTED(trim(comma) == ",");
+                z.set_element(i,j,d);
+            }
+        }
+    }
     /*------------------------------------------------------*/
-    void Importer::import_receiving(){}
+    void Importer::import_receiving(){
+        stringstream ss;
+        int box, bf, ny, nx;
+        string Box, Basis, FarField, comma;
+        ss >> Box >> box >> comma >> Basis >> bf >> comma >> FarField >> ny >> nx ;
+        Receiving r(box,bf);
+        r.set_size(ny,nx);
+        for (int i=0; i < ny ; i++){
+            for(int j=0; j< nx; j++){
+                ElementType d;
+                ss >> comma >> d ;
+                EXPECTED(trim(comma) == ",");
+                r.set_element(i,j,d);
+            }
+        }
+    }
     /*------------------------------------------------------*/
-    void Importer::import_far_field(){}
+    void Importer::import_far_field(){
+        stringstream ss;
+        int box, bf, ny, nx;
+        string Box, Basis, FarField, comma;
+        ss >> Box >> box >> comma >> Basis >> bf >> comma >> FarField >> ny >> nx ;
+        F_far ff(box,bf);
+        ff.set_size(ny,nx);
+        for (int i=0; i < ny ; i++){
+            for(int j=0; j< nx; j++){
+                ElementType d;
+                ss >> comma >> d ;
+                EXPECTED(trim(comma) == ",");
+                ff.set_element(i,j,d);
+            }
+        }
+    }
     /*------------------------------------------------------*/
     void Importer::import_I_vect(){
         int l,b,n;
@@ -365,7 +412,7 @@ namespace FMM_3D{
         int nf = box->ff_int_list.size();
         f << "Level " << l << ", Box " << b << ", Fars " << nf;
         for(int fi=0;fi<nf;fi++){
-            f << ", " << box->nf_int_list[fi]->index ;
+            f << ", " << box->ff_int_list[fi]->index ;
         }
         f << endl;
     }
@@ -445,8 +492,20 @@ namespace FMM_3D{
     }
     /*------------------------------------------------------*/
     void import_setup(){
-        Importer setup("problem_setup.txt");
-        setup.import();
+        //Importer setup("problem_setup.txt");
+        //setup.import();
+        string path("./data/");
+        import_boxes_binary (path+"boxes"); // This should be the first import to make the Tree
+        import_kappa        (path+"kappas");
+        import_translators  (path+"translators");
+        import_interpolators(path+"interpolators");
+        import_Z            (path+"Z");
+        import_I            (path+"I");
+        import_F            (path+"F");
+        import_R            (path+"R");
+        create_V            ();
+        create_F_tilde      ();
+        create_Exponential  ();
     }
     /*------------------------------------------------------*/
     void export_setup(){

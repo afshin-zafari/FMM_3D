@@ -1,0 +1,29 @@
+\documentclass{report}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\begin{document}
+\begin{table}
+$b_i$ = number of  basis functions (edges) in box $i$\\
+$L_\lambda$ = number of Legendre points in level $\lambda$\\
+$m$ = number of points in Lagrange polynomial interpolation\\
+$d_\lambda$ = diameter of every box in level $\lambda$\\
+\begin{tabular}{lcc|c|c|c|c|c|c|}
+Data & Shape & Indexing &&&$\mathcal{I}^\mathcal{S}_i$&$\mathcal{I}^\mathcal{F}_i$
+&$\mathcal{I}^\mathcal{S}_i$&\\
+\hline
+$Z_{ij}^{near}$ & $b_i\times b_j$& $\lambda_{max}, \mathcal{B}_i,\mathcal{B}_j : \mathcal{B}_j \in \mathcal{I}^\mathcal{N}_i$ &r&&&&&\\
+$I_i$ & $b_i\times 1$ & $\lambda_{max}, \mathcal{B}_i$&r&r&&&&\\
+$\color{red}{V_i}$ & $b_i\times 1$ & $\lambda_{max}, \mathcal{B}_i$&w&&&&&w\\
+$\hat{\kappa}$ & $2(L_\lambda+1)\times (L_\lambda+1)$ & $\lambda$&& &&&&\\
+$F_{ij}$ & $2(L_\lambda+1)\times (L_\lambda+1)$ & $\lambda_{max},j \in \mathcal{B}_i$&&r&&&&\\
+$R_{ij}$ & $2(L_\lambda+1)\times (L_\lambda+1)$ & $\lambda_{max},j \in \mathcal{B}_i$&&&&&&r\\
+$\color{red}{\tilde{F_i}}$ & $2(L_\lambda+1)\times (L_\lambda+1)$ & $\lambda, \mathcal{B}_i$&&w&rw&r&&\\
+$\color{red}{G_i}$ & $2(L_\lambda+1)\times (L_\lambda+1)$ & $\lambda, \mathcal{B}_i$&&&&w&rw&r\\
+$\mathcal{T}_i$ &  $2(L_\lambda+1)\times (L_\lambda+1)$ & $\lambda, \mathcal{B}_i$&&&&r&&\\
+$\mathcal{P}$ & $m\times m$ ??& $\mathcal{P}_\theta, \mathcal{P}_\phi$&&&r&&r&\\
+\hline
+\end{tabular}
+\end{table}
+
+\end{document}

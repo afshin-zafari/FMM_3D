@@ -1,6 +1,8 @@
 #include <assert.h>
+#include <cmath>
 #include "fmm_3d.hpp"
 namespace FMM_3D{
+    long DTBase::last_handle=0;
     Tree *tree;
     FMMContext *fmm_engine;
     /*---------------------------------------------------------------------------------------*/
@@ -39,6 +41,17 @@ namespace FMM_3D{
         return N;
     }
     /*---------------------------------------------------------------------------------------*/
+    GeneralArray *GeneralArray::get(){
+        Box &b=*tree->Level[level-1]->boxes[index-1];
+        if (type ==DTTypes::I){
+            return b.I;
+        }
+        else{
+            return b.V;
+        }
+        return nullptr;
+    }
+    /*---------------------------------------------------------------------------------------*/
     void GeneralArray::export_it(fstream &f){
         f << name << " "
           << "Box(" << index << "," << level << ")";
@@ -57,6 +70,18 @@ namespace FMM_3D{
         host = b.host;
     }
     /*---------------------------------------------------------------------------------------*/
+    Z_near *Z_near::get(){
+        Z_near *z=nullptr;
+        Box &iBox = *tree->Level[l1-1]->boxes[i1-1];
+        int n=iBox.Z.indx.size();
+        for(int i=0;i<n;i++){
+            if (iBox.Z.indx[i] == i2){
+                return iBox.Z.data[i];
+            }
+        }
+        return z;
+    }
+    /*---------------------------------------------------------------------------------------*/
     Z_near::Z_near(Box b1, Box b2){
         name.assign("Z_near");
         l1 = b1.level;
@@ -65,6 +90,21 @@ namespace FMM_3D{
         i2 = b2.index;
         type = DTTypes::Z;
         host = -1;
+    }
+    /*---------------------------------------------------------------------------------------*/
+    Z_near::Z_near(int m,int n){}//todo
+    Z_near::Z_near(int m,int n,bool){
+        M = m;
+        N = n;
+        mem= new ElementType[m*n];
+    }
+    /*---------------------------------------------------------------------------------------*/
+    void Z_near::set_element(int,int,ElementType){//todo
+    }
+    /*---------------------------------------------------------------------------------------*/
+    void Z_near::set_size(int m,int n){
+        M = m;
+        N = n;
     }
     /*---------------------------------------------------------------------------------------*/
     void Z_near::export_it(fstream &f){
@@ -91,7 +131,28 @@ namespace FMM_3D{
         host = b.host;
     }
     /*---------------------------------------------------------------------------------------*/
+    F_far::F_far(int m,int n){}//todo
+    F_far::F_far(int m,int n,bool){
+        M = m;
+        N = n;
+        data = new ElementType[m*n];
+    }
+    /*---------------------------------------------------------------------------------------*/
+    void F_far::set_size(int m, int n){
+        M=m;
+        N=n;
+    }
+    /*---------------------------------------------------------------------------------------*/
+    void F_far::set_element(int , int , ElementType){//todo
+    }
+    /*---------------------------------------------------------------------------------------*/
+    F_far *F_far::get(){
+        Box &bb=get_box(b.index,b.level);
+        return bb.F;
+    }
+    /*---------------------------------------------------------------------------------------*/
      void F_far::export_it(fstream &f){
+
          f << name << "_{"
             << b.index << "," << level <<"}(" ;
             k.export_it(f);
@@ -106,6 +167,11 @@ namespace FMM_3D{
         host = b.host;
     }
     /*---------------------------------------------------------------------------------------*/
+    F_far_tilde *F_far_tilde::get(){
+        Box &bb=get_box(m,level);
+        return bb.Ft;
+    }
+    /*---------------------------------------------------------------------------------------*/
     void F_far_tilde::export_it(fstream &f){
          f << name << "_{"
             << m << "," << level <<"}(" ;
@@ -118,6 +184,15 @@ namespace FMM_3D{
         name.assign("Interp");
         type = DTTypes::Interpolation_type;
         host = -1;
+    }
+    /*---------------------------------------------------------------------------------------*/
+    Interpolation * Interpolation::get(){
+        LevelBase &L=*tree->Level[from-1];
+        if ( from < to)
+            return L.C2P;
+        else
+            return L.P2C;
+        return nullptr;
     }
     /*---------------------------------------------------------------------------------------*/
     void Interpolation::export_it(fstream &f){
@@ -135,6 +210,10 @@ namespace FMM_3D{
             host = -1;
         }
     /*---------------------------------------------------------------------------------------*/
+    Exponential* Exponential::get(){
+        return nullptr;
+    }
+    /*---------------------------------------------------------------------------------------*/
     void Exponential::export_it(fstream &f){
          f << name << "_{"
             << i1 << "," << l1 << "}"
@@ -142,6 +221,26 @@ namespace FMM_3D{
             << "Box(" << i3 <<"," << l3 << ")";
             DTBase::export_it(f);
      }
+    /*---------------------------------------------------------------------------------------*/
+    Translator::Translator(int M_, int N_, ElementType* mat)
+        {
+            M=M_;
+            N=N_;
+            data=mat;
+        }
+    /*---------------------------------------------------------------------------------------*/
+    double distance(Point p1, Point p2){
+        return 0.0;
+    }
+    Translator *Translator::get(){
+        //d=distance of b1 to b2
+        Box &b1=get_box(i1,l1);
+        Box &b2=get_box(i2,l1);
+        double cl = std::sqrt(std::pow(b1.diagonal ,2)/3.0);
+        double d = distance(b1.center,b2.center)/cl;
+        return tree->Level[l1]->T[d];
+
+    }
     /*---------------------------------------------------------------------------------------*/
     Translator::Translator(int j, int box_idx1, int box_idx2, int level):
         i1(j) , l1(level), i2(box_idx1), i3(box_idx2){
@@ -177,6 +276,23 @@ namespace FMM_3D{
         name.assign("R");
         type = DTTypes::R;
         host = b.host;
+    }
+    /*---------------------------------------------------------------------------------------*/
+    Receiving::Receiving(int m,int n){//todo
+    }
+    /*---------------------------------------------------------------------------------------*/
+    Receiving::Receiving(int m,int n,bool){
+        M = m;
+        N = n;
+        data = new ElementType[m*n];
+    }
+    /*---------------------------------------------------------------------------------------*/
+    void Receiving::set_size(int m, int n){
+        M=m;
+        N=n;
+    }
+    /*---------------------------------------------------------------------------------------*/
+    void Receiving::set_element(int , int , ElementType){//todo
     }
     /*---------------------------------------------------------------------------------------*/
     void Receiving::export_it(fstream &f){

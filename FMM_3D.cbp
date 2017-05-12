@@ -36,6 +36,8 @@
 		<Unit filename="compute_3d.cpp" />
 		<Unit filename="fmm_3d.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="setup.cpp" />
+		<Unit filename="setup.h" />
 		<Unit filename="types_3d.cpp" />
 		<Unit filename="types_3d.hpp" />
 		<Unit filename="types_dist.cpp" />

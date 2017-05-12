@@ -14,8 +14,8 @@ Level 1, Box 1, I_vect 20, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8,
 Level 1, Kappa y 2, 1.70, .015
 Level 1, Kappa z 2, 10.0, .021
 Level 1, Translators 7
-Level 1, Translator 1, x 10, 20, 30 
-Z_near , Box 1 , Box 2 , Size nx ny , 1, 2, 3, 5.5 			
-Level 1, Box 1, Far_Field nx ny, 1., 2., 4.
-Level 1, Box 1, Receiving nx ny, 1., 2., 4.
+Level 1, Translator 1, Dist d, Size ny nx,  10, 20, 30 
+Z_near , Box 1 , Box 2 , Size ny nx , 1, 2, 3, 5.5 			
+Box 1, Basis 1, Far_Field nx ny, 1., 2., 4.
+Box 1, Basis 1, Receiving nx ny, 1., 2., 4.
 

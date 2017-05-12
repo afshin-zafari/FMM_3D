@@ -15,9 +15,9 @@ namespace FMM_3D{
     /*----------------------------------------------------*/
     void MVPTask::export_it(fstream &f){
         f << name << "\t\t";
-        A.export_it(f); f << "\t\t";
-        x.export_it(f); f << "\t\t";
-        y.export_it(f); f << "\t\t";
+        A->export_it(f); f << "\t\t";
+        x->export_it(f); f << "\t\t";
+        y->export_it(f); f << "\t\t";
         f << endl;
     }
     /*----------------------------------------------------*/
@@ -49,19 +49,19 @@ namespace FMM_3D{
     void InterpTask::export_it(fstream &f){
         string tabs("\t\t");
         f << name << tabs;
-        E.export_it(f); f << tabs;
-        I.export_it(f); f << tabs;
-        f1.export_it(f); f << tabs;
-        f2.export_it(f);
+         E->export_it(f); f << tabs;
+         I->export_it(f); f << tabs;
+        f1->export_it(f); f << tabs;
+        f2->export_it(f);
         f<< endl;
     }
     /*----------------------------------------------------*/
     void FarFieldTask::export_it(fstream &f){
         string tabs("\t\t");
         f << name << tabs;
-          F.export_it(f); f << tabs;
-          I.export_it(f); f << tabs;
-        F_t.export_it(f); f << endl;
+          F->export_it(f); f << tabs;
+          I->export_it(f); f << tabs;
+         Ft->export_it(f); f << endl;
     }
     /*----------------------------------------------------*/
     void FMMContext::export_tasks(string fn){
