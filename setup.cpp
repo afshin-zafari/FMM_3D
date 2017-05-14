@@ -9,32 +9,25 @@ namespace FMM_3D{
         FILE *f=fopen(fn.c_str(),"rb");
 
         fread(&L ,sizeof(uint32_t),1,f);
-        allocate(tree->Level,L);
+
         K = new int[L];
         M = new int[L];
         L_max=L;
 
-        for(uint32_t ii=0;ii<L;ii++)
-            tree->Level.push_back(new LevelBase);
+        //for(uint32_t ii=0;ii<L;ii++)tree->Level.push_back(new LevelBase);
+        tree->Level.resize(L);
 
 
         for(uint32_t i=0;i<L;i++){
             fread(&l ,sizeof(uint32_t),1,f);
             assert(l==i+1);
+            tree->Level[i] = new LevelBase;
             fread(&nb,sizeof(uint32_t),1,f);
-            for(uint32_t ii=0;ii<nb;ii++)
-                tree->Level[i]->boxes.push_back(new Box);
-
-            if (i != 0){
-                BoxList &b1=tree->Level[i-1]->boxes;
-                BoxList &b2=tree->Level[i  ]->boxes;
-                for(uint ib1=0;ib1<b1.size();ib1++){
-                    for(uint j=0;j<b1[ib1]->children_idx.size();j++){
-                        int cidx=b1[ib1]->children_idx[j];
-                        b1[ib1]->children.push_back(b2[cidx-1]);
-                    }
-                }
+            tree->Level[i]->boxes.resize(nb);
+            for(uint32_t ii=0;ii<nb;ii++){
+                tree->Level[i]->boxes[ii] = new Box;
             }
+            M[i]=nb;
             for(uint32_t b=0;b<nb;b++){
                 Box &B=*tree->Level[i]->boxes[b];
                 B.level = i+1;
@@ -47,23 +40,36 @@ namespace FMM_3D{
                 fread( &B.children_idx[0] ,sizeof(uint32_t),nc ,f);
 
                 fread(&ff,sizeof(uint32_t),1  ,f);
-                B.ff_int_list_idx.resize(ff);
-//                B.ff_int_list.resize(ff);
-                fread( &B.ff_int_list_idx[0] ,sizeof(uint32_t),ff ,f);
-                for(auto bb:B.ff_int_list_idx){
-                    Box *bx = tree->Level[i]->boxes[bb-1];
-                assert(bx);
-                    B.ff_int_list.push_back(tree->Level[i]->boxes[bb-1]);
+                if (ff){
+                    B.ff_int_list_idx.resize(ff);
+                    fread( &B.ff_int_list_idx[0] ,sizeof(uint32_t),ff ,f);
+                    for(auto bb:B.ff_int_list_idx){
+                        Box *bx = tree->Level[i]->boxes[bb-1];
+                        assert(bx);
+                        B.ff_int_list.push_back(tree->Level[i]->boxes[bb-1]);
+                    }
                 }
 
                 fread(&nf,sizeof(uint32_t),1  ,f);
-                B.nf_int_list_idx.resize(nf);
-//                B.nf_int_list.resize(nf);
-                fread( &B.nf_int_list_idx[0] ,sizeof(uint32_t),nf ,f);
-                for(auto bb:B.nf_int_list_idx){
-                    Box *bx=tree->Level[i]->boxes[bb-1];
-                    assert(bx);
-                    B.nf_int_list.push_back (tree->Level[i]->boxes[bb-1]);
+                if(nf){
+                    B.nf_int_list_idx.resize(nf);
+                    fread( &B.nf_int_list_idx[0] ,sizeof(uint32_t),nf ,f);
+                    for(auto bb:B.nf_int_list_idx){
+                        Box *bx=tree->Level[i]->boxes[bb-1];
+                        assert(bx);
+                        B.nf_int_list.push_back (tree->Level[i]->boxes[bb-1]);
+                    }
+                }
+
+            }
+            if (i != 0){
+                BoxList &b1=tree->Level[i-1]->boxes;
+                BoxList &b2=tree->Level[i  ]->boxes;
+                for(uint ib1=0;ib1<b1.size();ib1++){
+                    for(uint j=0;j<b1[ib1]->children_idx.size();j++){
+                        int cidx=b1[ib1]->children_idx[j];
+                        b1[ib1]->children.push_back(b2[cidx-1]);
+                    }
                 }
             }
         }

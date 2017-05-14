@@ -37,10 +37,6 @@ namespace FMM_3D{
         import_setup();
         export_setup();
         cout << "L max = " << L_max << endl;
-        L_max = 1;
-        L_min = 1;
-        K[L_max-1]=1;
-        M[L_max-1]=1;
     }
     /*--------------------------------------------------------------------*/
     void finalize(){
@@ -56,7 +52,7 @@ namespace FMM_3D{
         cout << __FUNCTION__ << " " << __LINE__ << endl;
         int L  = L_max;
         for (int k=1;k<= M[L-1];k++ ){
-            Box b_k = get_box(k,L);
+            Box &b_k = *get_box(k,L);
             BoxList nf = b_k.nf_int_list;
             for ( uint i=0;i< nf.size();i++){
               Box &b_l = *nf[i];
@@ -72,7 +68,7 @@ namespace FMM_3D{
         cout << __FUNCTION__ << " " << __LINE__ << endl;
         int L  = L_max;
         for (int m=1;m<= box_count(L);m++ ){
-            Box b_m= get_box(m,L);
+            Box b_m= *get_box(m,L);
 //            for ( int j=0;j< K[L_max-1];j++){
               Kappa_hat k_hat(-1,L);
               F_far F(b_m,L,k_hat);
@@ -88,7 +84,7 @@ namespace FMM_3D{
         for(int lambda=L_max-1; lambda>=L_min; lambda --){
             for(int m=1;m<=box_count(lambda);m++){
                 //for(int j=0;j<kappa_count(lambda);j++){
-                    Box b_m = get_box(m,lambda);
+                    Box b_m = *get_box(m,lambda);
                     BoxList &children=b_m.children;
                     for(uint n=0;n< children.size();n++){
                         Box b_n = *children[n];
@@ -110,7 +106,7 @@ namespace FMM_3D{
         for(int lambda=L_min; lambda<=L_max; lambda ++){
             for(int m=1;m<=box_count(lambda);m++){
                 //for(int j=0;j<kappa_count(lambda);j++){
-                    Box b_m=get_box(m,lambda);
+                    Box b_m=*get_box(m,lambda);
                     BoxList &ff=b_m.ff_int_list;
                     for(uint n=0;n< ff.size();n++){
                         Box          b_n=*ff[n];
@@ -130,7 +126,7 @@ namespace FMM_3D{
         for(int lambda=L_min; lambda<=L_max-1; lambda ++){
             for(int m=1;m<=box_count(lambda);m++){
                 //for(int j=0;j<kappa_count(lambda+1);j++){
-                    Box b_m=get_box(m,lambda);
+                    Box b_m=*get_box(m,lambda);
                     BoxList &children=b_m.children;
                     for(uint n=0;n< children.size();n++){
                         Box b_n = *children[n];
@@ -151,7 +147,7 @@ namespace FMM_3D{
     /*--------------------------------------------------------------------*/
     void box_NF_receiving(int m ,int lambda){
         cout << __FUNCTION__ << " " << __LINE__ << endl;
-        Box b_m=get_box(m,lambda);
+        Box b_m=*get_box(m,lambda);
         //for(int j=0;j<K[lambda-1];j++){
             V_vect    V(b_m);
             Kappa_hat k_hat(-1,lambda);

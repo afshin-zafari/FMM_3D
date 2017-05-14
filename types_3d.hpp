@@ -81,12 +81,8 @@ namespace FMM_3D{
       Box();
     };
     typedef vector<Box*> BoxList;
-    template <typename T>
-    void allocate(vector<T*> L, uint32_t n){
-        for(uint32_t i=0;i<n;i++)
-            L.push_back(new T);
-    }
-    Box &get_box(int index,int level);
+    Box *get_box_dep(int index,int level);
+    #define get_box(i,l)  tree->Level[(l)-1]->boxes[i-1]
     /*--------------------------------------------------------------------*/
     class GeneralArray: public DTBase{
     public:

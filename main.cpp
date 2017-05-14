@@ -2,7 +2,6 @@
 using namespace FMM_3D;
 void FMM_main(){
     init();
-    return;
     compute_near_field();
     compute_far_field();
     compute_interpolation();

@@ -6,12 +6,14 @@ namespace FMM_3D{
     Tree *tree;
     FMMContext *fmm_engine;
     /*---------------------------------------------------------------------------------------*/
-    Box &get_box(int index, int level){
+    Box *get_box_dep(int index, int level){
         assert(level >= 1);
         assert(index >= 0);
         assert((uint)level <= tree->Level.size());
         assert((uint)index <= tree->Level[level-1]->boxes.size());
-        return *tree->Level[level-1]->boxes[index];
+
+        Box *bb=tree->Level[level-1]->boxes[index];
+        return bb;
     }
     /*---------------------------------------------------------------------------------------*/
     Box::Box(){I = V= NULL;name.assign("Box"); type = DTTypes::Box_type;}
@@ -147,7 +149,7 @@ namespace FMM_3D{
     }
     /*---------------------------------------------------------------------------------------*/
     F_far *F_far::get(){
-        Box &bb=get_box(b.index,b.level);
+        Box &bb=*get_box(b.index,b.level);
         return bb.F;
     }
     /*---------------------------------------------------------------------------------------*/
@@ -163,12 +165,12 @@ namespace FMM_3D{
     F_far_tilde::F_far_tilde(int m_, int level_,Kappa_hat &k_):m(m_),level(level_),k(k_){
         name.assign("F~");
         type = DTTypes::F_tilde;
-        Box b = get_box(m,level);
+        Box b = *get_box(m,level);
         host = b.host;
     }
     /*---------------------------------------------------------------------------------------*/
     F_far_tilde *F_far_tilde::get(){
-        Box &bb=get_box(m,level);
+        Box &bb=*get_box(m,level);
         return bb.Ft;
     }
     /*---------------------------------------------------------------------------------------*/
@@ -222,20 +224,22 @@ namespace FMM_3D{
             DTBase::export_it(f);
      }
     /*---------------------------------------------------------------------------------------*/
-    Translator::Translator(int M_, int N_, ElementType* mat)
-        {
-            M=M_;
-            N=N_;
-            data=mat;
-        }
+    Translator::Translator(int M_, int N_, ElementType* mat){
+        M=M_;
+        N=N_;
+        data=mat;
+    }
     /*---------------------------------------------------------------------------------------*/
     double distance(Point p1, Point p2){
-        return 0.0;
+        return
+        std::sqrt(std::pow(p1.x - p2.x,2)+
+        std::pow(p1.y - p2.y,2)+
+        std::pow(p1.z - p2.z,2));
     }
+    /*---------------------------------------------------------------------------------------*/
     Translator *Translator::get(){
-        //d=distance of b1 to b2
-        Box &b1=get_box(i1,l1);
-        Box &b2=get_box(i2,l1);
+        Box &b1=*get_box(i1,l1);
+        Box &b2=*get_box(i2,l1);
         double cl = std::sqrt(std::pow(b1.diagonal ,2)/3.0);
         double d = distance(b1.center,b2.center)/cl;
         return tree->Level[l1]->T[d];
@@ -260,7 +264,7 @@ namespace FMM_3D{
     Green::Green(int m_, int level_, Kappa_hat &k_):m(m_),level(level_),k(k_){
         name.assign("G");
         type = DTTypes::G;
-        Box b = get_box(m,level);
+        Box b = *get_box(m,level);
         host = b.host;
     }
     /*---------------------------------------------------------------------------------------*/
