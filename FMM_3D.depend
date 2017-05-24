@@ -63,3 +63,10 @@
 	"types_3d.hpp"
 	"types_dist.hpp"
 
+1495100919 source:c:\afshin\fmm_3d\src\compute_3d.cpp
+	"fmm_3d.hpp"
+
+1495121403 source:c:\afshin\fmm_3d\src\main.cpp
+	"fmm_3d.hpp"
+	<fstream>
+
