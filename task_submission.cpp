@@ -1,15 +1,17 @@
 #include "task_submission.h"
 
 namespace FMM_3D{
-    GData *mainF,*mainG;
+    GData *mainF,*mainG,*mainV;
     int g,part_count;
     double work_min;
     /*------------------------------------------------------------------------*/
     void fmm_taskified(){
         mainF = new GData(L_max,g);
         mainG = new GData(L_max,g);
+        mainV = new GData(1    ,g);
         GData &F = *mainF;
         GData &G = *mainG;
+        GData &V = *mainV;
 
         for(int gi = 0;gi<g; gi++){
             if ( gi ==0)
@@ -33,10 +35,11 @@ namespace FMM_3D{
                 fmm_engine->add_task ( new P2CTask(G(L-1,gi),G(L,gi)));
             }
         }
-        for(int gi = 0;gi<g; gi++){//todo: How can we make it to run only when no other tasks can run?
-            for(int gj = 0;gj<g; gj++){
-                fmm_engine->add_task ( new NearFTask(G(L_max,gi),G(L_max,gj)));
-            }
+        for(int gi = 0;gi<g; gi++){
+            if ( gi ==0)
+                fmm_engine->add_task( new RCVTask (              G(L_max,gi),V(0,gi)));
+            else
+                fmm_engine->add_task( new RCVTask (G(L_max,gi-1),G(L_max,gi),V(0,gi)));
         }
     }
     /*------------------------------------------------------------------------*/
@@ -132,7 +135,7 @@ namespace FMM_3D{
         }
     }
     /*------------------------------------------------------------------------*/
-    void NearFTask::run(){}//todo
+    void NFLTask::run(){}//todo
     /*------------------------------------------------------------------------*/
     void p2cTask::run( ){
 
@@ -194,5 +197,14 @@ namespace FMM_3D{
         boxes->first->Z.data[boxes->second->index]->get_dims(M,N);
         boxes->first->I->get_dims(K,P);
         return (double)(M*N*K)/3.0;
+    }
+    /*----------------------------------------------------------------------*/
+    void NFL_tasks ( GData & dep,int chunk_no, int chunks_count){
+        GData &G = *mainG;
+        for(int gi = 0;gi<g; gi++){//todo: How can we make it to run only when no other tasks can run?
+            for(int gj = 0;gj<g; gj++){
+                fmm_engine->add_task ( new NFLTask(dep,G(L_max,gi),G(L_max,gj)));
+            }
+        }
     }
 }

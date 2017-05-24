@@ -169,11 +169,29 @@ namespace FMM_3D{
         void export_it(fstream &){}
     };
     /*======================================================================*/
-    class NearFTask: public DTTask {
+    class RCVTask: public DTTask {
     public:
-        GData *d1,*d2;
-        NearFTask(GData &d1_,GData &d2_){
-            d1 = &d1_;d2 = &d2_;
+        GData *d1,*d2,*d3;
+        RCVTask(GData &d1_,GData &d2_){
+            d3 = &d2_;
+            d2 = &d1_;
+            d1 = nullptr;
+            key= DT_RCV;
+        }
+
+        RCVTask(GData &d1_,GData &d2_,GData &d3_){
+            d1 = &d1_;d2 = &d2_;d3 = &d3_;
+            key= DT_RCV;
+        }
+        void run(){}
+        void export_it(fstream &){}
+    };
+    /*======================================================================*/
+    class NFLTask: public DTTask {
+    public:
+        GData *d0,*d1,*d2;
+        NFLTask(GData & d0_,GData &d1_,GData &d2_){
+            d0 = &d0_;d1 = &d1_;d2 = &d2_;
             key= DT_NFL;
         }
         void run();
@@ -255,5 +273,6 @@ namespace FMM_3D{
     double get_p2c_work(Box *);
     double get_ffl_work(Box *);
     void fmm_taskified();
+    void NFL_tasks ( GData & dep,int chunk_no, int chunks_count);
 }
 #endif // TASK_SUBMISSION_HPP
