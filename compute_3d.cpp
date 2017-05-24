@@ -30,12 +30,15 @@ namespace FMM_3D{
     void NF_receiving(Receiving&R,Green&G,GeneralArray&V){
         fmm_engine->add_receiving_task(&R,&G,&V);
     }
+
     /*--------------------------------------------------------------------*/
     void init(){
         fmm_engine = new FMMContext;
         tree = new Tree;
+        g = 1;
         import_setup();
         export_setup();
+        L_min = 1;
         cout << "L max = " << L_max << endl;
     }
     /*--------------------------------------------------------------------*/
@@ -89,11 +92,11 @@ namespace FMM_3D{
                     for(uint n=0;n< children.size();n++){
                         Box b_n = *children[n];
                         int bn = b_n.index;
-                        Kappa_hat k_hat(-1,lambda);
-                        F_far_tilde F_tilde_rhs(bn,lambda+1,k_hat);
-                        F_far_tilde F_tilde_lhs(m,lambda  ,k_hat);
-                        Interpolation P(lambda+1, lambda,k_hat);
-                        Exponential E(-1,lambda, m, lambda, bn, lambda +1);//j==-1
+                        Kappa_hat       k_hat(-1,lambda);
+                        F_far_tilde     F_tilde_rhs(bn,lambda+1,k_hat);
+                        F_far_tilde     F_tilde_lhs(m,lambda  ,k_hat);
+                        Interpolation   P(lambda+1, lambda,k_hat);
+                        Exponential     E(-1,lambda, m, lambda, bn, lambda +1);//j==-1
                         FF_interpolation(E,P,F_tilde_rhs, F_tilde_lhs);
                     }
                 //}
@@ -111,8 +114,8 @@ namespace FMM_3D{
                     for(uint n=0;n< ff.size();n++){
                         Box          b_n=*ff[n];
                         Kappa_hat    k_hat(-1,lambda);
-                        F_far_tilde  F_tilde(n,lambda,k_hat);
-                        Translator   T(-1,m,n,lambda);//j==-1
+                        F_far_tilde  F_tilde(n+1,lambda,k_hat);
+                        Translator   T(-1,m,n+1,lambda);//j==-1
                         Green        G(m,lambda,k_hat);
                         FF_green(T,F_tilde, G);
                     }
@@ -135,7 +138,7 @@ namespace FMM_3D{
                         Kappa_hat     k_hat_higher(-1,lambda+1);
                         Interpolation P           (lambda,lambda+1,k_hat);
                         Exponential   E           (-1,lambda,  bn,lambda+1, m, lambda);
-                        Translator    T           (-1,m,bn,lambda);
+                        Translator    T           (-1,m,bn+1,lambda);
                         Green         G_higher    (bn,lambda+1,k_hat_higher);
                         Green         G           (m,lambda  ,k_hat       );
                         FF_green_interpolation(P,E,G,G_higher);
@@ -146,7 +149,7 @@ namespace FMM_3D{
     }
     /*--------------------------------------------------------------------*/
     void box_NF_receiving(int m ,int lambda){
-        cout << __FUNCTION__ << " " << __LINE__ << endl;
+        //cout << __FUNCTION__ << " " << __LINE__ << endl;
         Box b_m=*get_box(m,lambda);
         //for(int j=0;j<K[lambda-1];j++){
             V_vect    V(b_m);

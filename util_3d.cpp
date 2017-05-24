@@ -156,9 +156,9 @@ namespace FMM_3D{
         ss.str(line);
         string Level, Kappas, comma;
         ss >> Level >> l >> comma >> Kappas >> nx >> comma >> ny;
-        tree->Level[l-1]->K_x = new ElementType [ny*nx];
-        tree->Level[l-1]->K_y = new ElementType [ny*nx];
-        tree->Level[l-1]->K_z = new ElementType [ny*nx];
+//        tree->Level[l-1]->K_x = new ElementType [ny*nx];
+//        tree->Level[l-1]->K_y = new ElementType [ny*nx];
+//        tree->Level[l-1]->K_z = new ElementType [ny*nx];
         tree->Level[l-1]->K_rows = ny;
         tree->Level[l-1]->K_cols = nx;
         K[l-1]=nx*ny;
@@ -179,7 +179,7 @@ namespace FMM_3D{
                 ElementType d;
                 ss >> comma >> d ;
                 EXPECTED(trim(comma) == ",");
-                tree->Level[l-1]->K_x[i+j*ny]=d;
+//                tree->Level[l-1]->K_x[i+j*ny]=d;
             }
         }
     }
@@ -199,7 +199,7 @@ namespace FMM_3D{
                 ElementType d;
                 ss >> comma >> d ;
                 EXPECTED(trim(comma) == ",");
-                tree->Level[l-1]->K_y[i+j*ny]=d;
+//                tree->Level[l-1]->K_y[i+j*ny]=d;
             }
         }
     }
@@ -219,7 +219,7 @@ namespace FMM_3D{
                 ElementType d;
                 ss >> comma >> d ;
                 EXPECTED(trim(comma) == ",");
-                tree->Level[l-1]->K_z[i+j*ny]=d;
+//                tree->Level[l-1]->K_z[i+j*ny]=d;
             }
         }
     }
@@ -449,7 +449,7 @@ namespace FMM_3D{
         f << "Level " << l << ", Kappa x " << nky*nkx ;
         for(int ki=0;ki<nky;ki++){
             for(int kj=0;kj<nkx;kj++){
-                f << ", " << tree->Level[l-1]->K_x[ki+kj*nky];
+//                f << ", " << tree->Level[l-1]->K_x[ki+kj*nky];
             }
         }
         f << endl;
@@ -461,7 +461,7 @@ namespace FMM_3D{
         f << "Level " << l << ", Kappa y " << nky*nkx ;
         for(int ki=0;ki<nky;ki++){
             for(int kj=0;kj<nkx;kj++){
-                f << ", " << tree->Level[l-1]->K_y[ki+kj*nky];
+//                f << ", " << tree->Level[l-1]->K_y[ki+kj*nky];
             }
         }
         f << endl;
@@ -473,7 +473,7 @@ namespace FMM_3D{
         f << "Level " << l << ", Kappa z " << nky*nkx ;
         for(int ki=0;ki<nky;ki++){
             for(int kj=0;kj<nkx;kj++){
-                f << ", " << tree->Level[l-1]->K_z[ki+kj*nky];
+//                f << ", " << tree->Level[l-1]->K_z[ki+kj*nky];
             }
         }
         f << endl;
@@ -500,12 +500,11 @@ namespace FMM_3D{
         import_translators  (path+"translators");
         import_interpolators(path+"interpolators");
         import_Z            (path+"Z");
-        import_I            (path+"I");
+        create_I            ();
         import_F            (path+"F");
         import_R            (path+"R");
         create_V            ();
-        create_F_tilde      ();
-        create_Exponential  ();
+        create_Far_fields   ();
     }
     /*------------------------------------------------------*/
     void export_setup(){

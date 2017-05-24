@@ -3,6 +3,7 @@
 #include "fmm_3d.hpp"
 namespace FMM_3D{
     long DTBase::last_handle=0;
+    long DTBase::data_count=0;
     Tree *tree;
     FMMContext *fmm_engine;
     /*---------------------------------------------------------------------------------------*/
@@ -16,17 +17,24 @@ namespace FMM_3D{
         return bb;
     }
     /*---------------------------------------------------------------------------------------*/
-    Box::Box(){I = V= NULL;name.assign("Box"); type = DTTypes::Box_type;}
+    Box::Box(){
+        I  = V = nullptr;
+        F  = nullptr;
+        R  = nullptr;
+        Ft = nullptr;
+        name.assign("Box");
+        type = DTTypes::Box_type;
+    }
     /*---------------------------------------------------------------------------------------*/
     GeneralArray::GeneralArray(Box &b){
         level = b.level;
         index = b.index;
     }
     /*---------------------------------------------------------------------------------------*/
-    void GeneralArray::set_element(int i, int j , ElementType d){//todo
+    void GeneralArray::set_element(int i, int j , ElementType d){//deprecated
     }
     /*---------------------------------------------------------------------------------------*/
-    ElementType GeneralArray::get_element(int i, int j){//todo
+    ElementType GeneralArray::get_element(int i, int j){//deprecated
         #ifdef COMPLEX
             ElementType e(0,0);
             return e;
@@ -81,6 +89,7 @@ namespace FMM_3D{
                 return iBox.Z.data[i];
             }
         }
+        std::cout << "Z(" << i1 << "," << i2 <<") not found." << std::endl;
         return z;
     }
     /*---------------------------------------------------------------------------------------*/
@@ -101,7 +110,7 @@ namespace FMM_3D{
         mem= new ElementType[m*n];
     }
     /*---------------------------------------------------------------------------------------*/
-    void Z_near::set_element(int,int,ElementType){//todo
+    void Z_near::set_element(int,int,ElementType){//deprecated
     }
     /*---------------------------------------------------------------------------------------*/
     void Z_near::set_size(int m,int n){
@@ -145,11 +154,13 @@ namespace FMM_3D{
         N=n;
     }
     /*---------------------------------------------------------------------------------------*/
-    void F_far::set_element(int , int , ElementType){//todo
+    void F_far::set_element(int , int , ElementType){//deprecated
     }
     /*---------------------------------------------------------------------------------------*/
     F_far *F_far::get(){
         Box &bb=*get_box(b.index,b.level);
+        if(!bb.F)
+            std::cout <<"F for B("<<b.index<<","<<b.level<<") not found." << std::endl;
         return bb.F;
     }
     /*---------------------------------------------------------------------------------------*/
@@ -162,6 +173,12 @@ namespace FMM_3D{
             DTBase::export_it(f);
      }
     /*---------------------------------------------------------------------------------------*/
+    F_far_tilde::F_far_tilde(int m, int n,bool){
+        M = m;
+        N = n;
+        data = new ElementType[m*n] ;
+    }
+    /*---------------------------------------------------------------------------------------*/
     F_far_tilde::F_far_tilde(int m_, int level_,Kappa_hat &k_):m(m_),level(level_),k(k_){
         name.assign("F~");
         type = DTTypes::F_tilde;
@@ -171,6 +188,8 @@ namespace FMM_3D{
     /*---------------------------------------------------------------------------------------*/
     F_far_tilde *F_far_tilde::get(){
         Box &bb=*get_box(m,level);
+        if(!bb.Ft)
+            std::cout <<"F~ for B("<<m<<","<<level<<") not found." << std::endl;
         return bb.Ft;
     }
     /*---------------------------------------------------------------------------------------*/
@@ -190,10 +209,16 @@ namespace FMM_3D{
     /*---------------------------------------------------------------------------------------*/
     Interpolation * Interpolation::get(){
         LevelBase &L=*tree->Level[from-1];
-        if ( from < to)
+        if ( from < to){
+            if(!L.C2P)
+                std::cout << "Interp("<<from <<"," <<to<<") not found."<< std::endl;
             return L.C2P;
-        else
+        }
+        else{
+            if(!L.P2C)
+                std::cout << "Interp("<<from <<"," <<to<<") not found."<< std::endl;
             return L.P2C;
+        }
         return nullptr;
     }
     /*---------------------------------------------------------------------------------------*/
@@ -205,6 +230,11 @@ namespace FMM_3D{
         DTBase::export_it(f);
      }
     /*---------------------------------------------------------------------------------------*/
+    Exponential::Exponential( int m , int n, bool){
+        M = m;
+        N=n;
+        data = new ElementType[m*n];
+    }
     Exponential::Exponential( int j , int level, int box_idx1, int level1, int box_idx2, int level2):
         i1(j) , l1(level), i2(box_idx1), l2(level1), i3(box_idx2), l3(level2){
             name.assign("Exponent");
@@ -213,7 +243,16 @@ namespace FMM_3D{
         }
     /*---------------------------------------------------------------------------------------*/
     Exponential* Exponential::get(){
-        return nullptr;
+        Box &from=*get_box(i2,l2);
+        Box &to  =*get_box(i3,l3);
+        Exponential *e=nullptr;
+        if (l3 >l2) // to > from => P2C
+            e=to.E;
+        else
+            e=from.E;
+        if(!e)
+            std::cout << "Exponential for B("<<i2<<","<<l2<<") --> B("<<i3<<","<<l3<<") not found.\n" ;
+        return e;
     }
     /*---------------------------------------------------------------------------------------*/
     void Exponential::export_it(fstream &f){
@@ -228,26 +267,38 @@ namespace FMM_3D{
         M=M_;
         N=N_;
         data=mat;
+        name.assign("Translator");
+        type = DTTypes::T;
+        host = -1;
     }
     /*---------------------------------------------------------------------------------------*/
     double distance(Point p1, Point p2){
         return
-        std::sqrt(std::pow(p1.x - p2.x,2)+
-        std::pow(p1.y - p2.y,2)+
-        std::pow(p1.z - p2.z,2));
+        std::sqrt(
+                  std::pow(p1.x - p2.x,2)+
+                  std::pow(p1.y - p2.y,2)+
+                  std::pow(p1.z - p2.z,2)
+                  );
     }
     /*---------------------------------------------------------------------------------------*/
     Translator *Translator::get(){
         Box &b1=*get_box(i1,l1);
         Box &b2=*get_box(i2,l1);
         double cl = std::sqrt(std::pow(b1.diagonal ,2)/3.0);
-        double d = distance(b1.center,b2.center)/cl;
-        return tree->Level[l1]->T[d];
+        double di=distance(b1.center,b2.center);
+        int d = di/cl;
+        int n = tree->Level[l1-1]->T.size();
+        Translator *t=nullptr;
+        if ( d<=n and d>=0)
+            t=tree->Level[l1-1]->T[d%n];
+        if(!t)
+            std::cout << "T for B(" <<i1<<"," << l1<<")--B("<<i2<<","<<l1<<") with distance: "<<d<<" not found." << std::endl;
+        return t;
 
     }
     /*---------------------------------------------------------------------------------------*/
     Translator::Translator(int j, int box_idx1, int box_idx2, int level):
-        i1(j) , l1(level), i2(box_idx1), i3(box_idx2){
+          i1(box_idx1), i2(box_idx2),l1(level){
             name.assign("Translator");
             type = DTTypes::T;
             host = -1;
@@ -256,10 +307,23 @@ namespace FMM_3D{
     void Translator::export_it(fstream &f){
          f << name << "_{"
             << i1 << "," << l1 << "}"
-            << "Box(" << i2 <<"," << l2 << ")=>"
-            << "Box(" << i3 <<"," << l3 << ")";
+            << "Box(" << i2 <<"," << l1 << ")";
             DTBase::export_it(f);
      }
+    /*---------------------------------------------------------------------------------------*/
+    Green *Green::get(){
+        Box &box = *tree->Level[level-1]->boxes[m-1];
+        Green *g = box.G;
+        if (!g)
+            std::cout <<"G("<< m<< ","<< level<<") not found."<< std::endl;
+        return g;
+    }
+    /*---------------------------------------------------------------------------------------*/
+    Green::Green(int m, int n,bool){
+        M = m;
+        N = n;
+        mem = new ElementType[m*n];
+    }
     /*---------------------------------------------------------------------------------------*/
     Green::Green(int m_, int level_, Kappa_hat &k_):m(m_),level(level_),k(k_){
         name.assign("G");
@@ -285,6 +349,13 @@ namespace FMM_3D{
     Receiving::Receiving(int m,int n){//todo
     }
     /*---------------------------------------------------------------------------------------*/
+    Receiving *Receiving::get(){
+        Receiving *r=tree->Level[b.level-1]->boxes[b.index-1]->R;
+        if(!r)
+            std::cout << "R(" <<b.index<<"," <<b.level << ") not found." <<std::endl;
+        return r;
+    }
+    /*---------------------------------------------------------------------------------------*/
     Receiving::Receiving(int m,int n,bool){
         M = m;
         N = n;
@@ -296,7 +367,8 @@ namespace FMM_3D{
         N=n;
     }
     /*---------------------------------------------------------------------------------------*/
-    void Receiving::set_element(int , int , ElementType){//todo
+    void Receiving::set_element(int , int , ElementType){//deprecated
+        //#warning "This method should not be used any more"
     }
     /*---------------------------------------------------------------------------------------*/
     void Receiving::export_it(fstream &f){

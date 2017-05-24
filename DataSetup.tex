@@ -25,5 +25,120 @@ $\mathcal{P}$ & $m\times m$ ??& $\mathcal{P}_\theta, \mathcal{P}_\phi$&&&r&&r&\\
 \hline
 \end{tabular}
 \end{table}
+~\newpage
+~\\Near Field
+\begin{equation}
+\begin{aligned}
+V_i^{b_i\times1}=Z_{ij}^{b_i\times b_j}I_j^{b_j\times1},\quad  \forall \mathcal{B}_j \text{ neighbor }\mathcal{B}_i	\\
+V = \left[\mathbf{V_x} \;\mathbf{V_y}\;\mathbf{V_z}\;\right]\quad Z = \left[\mathbf{Z_x}  \;\mathbf{Z_y}\; \mathbf{Z_z}\right]
+\quad I = \left[\mathbf{I_x}  \;\mathbf{I_y}\; \mathbf{I_z}\right]\\
+\mathbf{V_x = Z_xI_x}\quad \mathbf{V_y = Z_yI_y}\quad \mathbf{V_z = Z_zI_z}
+\end{aligned}
+\end{equation}
+Box Field
+\begin{equation}
+\tilde{F}_{m\lambda} ^{K_{\lambda} \times 1}= F_m^{{K_{\lambda}}\times b_m}I_m^{b_m\times 1}, \quad \forall \mathcal{B}_m \in \lambda_{max} \wedge  \lambda = \lambda_{max}
+\end{equation}
+C2P
+\begin{equation}
+\begin{aligned}
+\tilde{F}_{P,\lambda-1} ^{K_{\lambda-1} \times 1} =\sum_{\mathcal{B}_C} E_{CP}^{K_{\lambda} \times 1} \odot A_{1,\lambda}\tilde{F}_{C\lambda} ^{K_{\lambda} \times 1}A_{2,\lambda}\;,\quad \forall \mathcal{B}_C \text{ child of } \mathcal{B}_P\\
+E_{mn}=e^{\imath\kappa_n\mathbf{d}_{\mathcal{B}_n,\mathcal{B}_m}}~~~~~~~~~~~~~~~~~~~~~~~
+\end{aligned}
+\end{equation}
+Far Field
+\begin{equation}
+G_{m\lambda}^{K_{\lambda} \times 1} =\sum_{\mathcal{B}_n} T_{nm}^{K_{\lambda} \times 1}\odot \tilde{F}_{n\lambda} ^{K_{\lambda} \times 1},\quad \forall \mathcal{B}_n \in \mathcal{I}_{m\lambda}^\mathcal{F}
+\end{equation}
+P2C
+\begin{equation}
+G_{C,\lambda+1}^{K_{\lambda+1} \times 1} = -E_{CP}^{K_{\lambda} \times 1}
+%e^{\imath \kappa_P\mathbf{d}_{\mathcal{B}_P,\mathcal{B}_C}}
+\odot B_{1,\lambda}G_{P\lambda}^{K_{\lambda} \times 1}B_{2,\lambda}\;,\quad \forall \mathcal{B}_C \text{ child of } \mathcal{B}_P
+\end{equation}
+Receiving
+\begin{equation}	
+V_m^{b_m\times 1}=R_m\odot G_{m,\lambda_{max}}^{K_{\lambda_{max}}\times 1},\quad \mathcal{B}_m \in \lambda_{max}
+\end{equation}
+
+\setcounter{equation}{0}
+\begin{equation}
+\textcolor{blue}{V_i}=Z_{ij}I_j
+\end{equation}
+\begin{equation}
+\textcolor{blue}{\tilde{F}_m}=F_{m}I_m
+\end{equation}
+\begin{equation}
+\textcolor{blue}{\tilde{F}_P}=\cdots\textcolor{blue}{\tilde{F}_{C}}\cdots
+\end{equation}
+\begin{equation}
+\textcolor{blue}{G_m}=\cdots\textcolor{blue}{\tilde{F}_{n}}\cdots
+\end{equation}
+\begin{equation}
+\textcolor{blue}{G_C}=\cdots\textcolor{blue}{G_{P}}\cdots
+\end{equation}
+\begin{equation}
+\textcolor{blue}{V_m}=\cdots\textcolor{blue}{G_{m}}\cdots
+\end{equation}
+\newpage
+\begin{itemize}
+\item Specific\\
+$D_{L_{max} \times g}$ is dummy data owned by every host 
+\begin{verbatim}
+for L=L_max-1:-1:1
+  for gi=1:g 
+    C2P_t D(L+1, gi  ),D(L,gi)
+    XLT_t D(L  , gi-1),D(L,gj)    ; for gj=1:g
+  end
+end
+for L=1:L_max
+  for gi=1:g
+    P2C_t D(L-1,gi),D(L,gi)
+  end
+end
+for gi=1:g
+  for gj=1:g
+    NF_t D(L_max,gi),D(L_max,gj)
+  end
+end
+C2P_t(A,B) Kernel
+  A , B are partitioned hierarchically
+  for a in A
+    for b in  B
+      c2p_t(a,b);
+    end 
+  end
+end
+C2P_t(D1,D2) Kernel
+  for p in D2
+    for c in p.children
+      c2p_t c,p
+    end
+  end
+end
+XLT_t(D1,D2) Kernel
+  for x in D2 
+    for b in D1
+      if b in x.far_field
+        xlt_t b,x
+      end
+    end
+  end
+end
+P2C_t(D1,D2) Kernel
+  for p in D1
+    for c in p.children
+      if c in D2, p2c_t p,c
+    end
+  end
+end
+\end{verbatim}
+\item General\\
+\begin{verbatim}
+type,D1,D2,D3,d3_box
+
+
+\end{verbatim}
+\end{itemize}
 
 \end{document}

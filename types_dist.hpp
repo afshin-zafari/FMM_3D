@@ -14,9 +14,18 @@ typedef enum key {MVP,
         Green_Translate,
         Green_Interpolate,
         Receiving_Key,
-        FarField_key
+        FarField_key,
+        DT_C2P,
+        DT_XLT,
+        DT_P2C,
+        DT_NFL,
+        DT_FFL
     } TaskKey;
 /*--------------------------------------------------------------------*/
+class SGTask {
+public:
+    double work;
+};
 class DTTask
 {
 public:
@@ -80,17 +89,19 @@ public:
 class GreenTransTask : public DTTask
 {
 private:
-    Translator   T;
-    F_far_tilde  F;
-    Green        G;
+    Translator   *T;
+    F_far_tilde  *F;
+    Green        *G;
 public:
-    GreenTransTask(Translator *T_,F_far_tilde*F_, Green*G_  ):
-        T(*T_),F(*F_),G(*G_)
+    GreenTransTask(Translator *T_,F_far_tilde*F_, Green*G_  )
     {
+        T = T_->get();
+        F = F_->get();
+        G = G_->get();
         DTTask::name.assign("GreenTrans");
-        args[0] = &T;
-        args[1] = &F;
-        args[2] = &G;
+        args[0] = T;
+        args[1] = F;
+        args[2] = G;
         args[3] = nullptr;
         axs[0]=axs[1]=Access::Read;
         axs[2]=Access::Write;
@@ -103,18 +114,21 @@ public:
 class GreenInterpTask : public DTTask
 {
 private:
-    Interpolation P;
-    Exponential   E;
-    Green         G1,G2 ;
+    Interpolation *P;
+    Exponential   *E;
+    Green         *G1,*G2 ;
 public:
-    GreenInterpTask(Interpolation*P_,Exponential*E_,Green*G1_,Green *G2_ ):
-        P(*P_),E(*E_),G1(*G1_),G2(*G2_)
+    GreenInterpTask(Interpolation*P_,Exponential*E_,Green*G1_,Green *G2_ )
     {
+        P= P_->get();
+        E= E_->get();
+        G1= G1_->get();
+        G2= G2_->get();
         DTTask::name.assign("GreenInterp");
-        args[0] = &P;
-        args[1] = &E;
-        args[2] = &G1;
-        args[3] = &G2;
+        args[0] = P;
+        args[1] = E;
+        args[2] = G1;
+        args[3] = G2;
         axs[0]=axs[1]=axs[2]=Access::Read;
         axs[3]=Access::Write;
         key = Green_Interpolate;
@@ -126,17 +140,19 @@ public:
 class ReceivingTask: public DTTask
 {
 private:
-    Receiving    R;
-    Green        G;
-    GeneralArray V;
+    Receiving    *R;
+    Green        *G;
+    GeneralArray *V;
 public:
-    ReceivingTask(Receiving*R_,Green*G_,GeneralArray*V_):
-        R(*R_),G(*G_),V(*V_)
+    ReceivingTask(Receiving*R_,Green*G_,GeneralArray*V_)
     {
+        R = R_->get();
+        G = G_->get();
+        V = V_->get();
         DTTask::name.assign("Receiving");
-        args[0] = &R;
-        args[1] = &G;
-        args[2] = &V;
+        args[0] = R;
+        args[1] = G;
+        args[2] = V;
         args[3] = nullptr;
         axs[0]=axs[1]=Access::Read;
         axs[2]=Access::Write;
@@ -176,10 +192,16 @@ private:
     list<DTTask*> tasks;
 public:
     //enum TASKS{ MVP,Interpolation_Key, Green_Translate, Green_Interpolate, Receiving_Key};
-
+    long counts[11];
+    FMMContext(){
+        for ( int i=0;i<11;i++)
+            counts[i]=0;
+    }
     /*--------------------------------------------------------------------*/
+    void add_task( SGTask *){}
     void add_task(DTTask *t)
     {
+        counts[t->key]++;
         tasks.push_back(t);
     }
     /*--------------------------------------------------------------------*/

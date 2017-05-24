@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2013.7.26)  9 MAY 2017 16:40
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2013.7.26)  17 MAY 2017 23:35
 entering extended mode
 **C:/Afshin/FMM_3D/DataSetup.tex
 (C:/Afshin/FMM_3D/DataSetup.tex
@@ -169,24 +169,46 @@ Overfull \hbox (35.84584pt too wide) in paragraph at lines 7--27
 [] 
  []
 
-[1{C:/Users/Afshin/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
-(C:\Afshin\FMM_3D\DataSetup.aux) ) 
+[1{C:/Users/Afshin/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
+
+] [2]
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 85.
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\base\omscmr.fd"
+File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 85.
+ [3]
+Underfull \hbox (badness 10000) in paragraph at lines 136--137
+
+ []
+
+[4] (C:\Afshin\FMM_3D\DataSetup.aux) ) 
 Here is how much of TeX's memory you used:
- 2269 strings out of 493921
- 26950 string characters out of 3147279
+ 2294 strings out of 493921
+ 27318 string characters out of 3147279
  89494 words of memory out of 3000000
- 5588 multiletter control sequences out of 15000+200000
- 5339 words of font info for 22 fonts, out of 3000000 for 9000
+ 5606 multiletter control sequences out of 15000+200000
+ 6434 words of font info for 26 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
- 27i,12n,35p,242b,229s stack positions out of 5000i,500n,10000p,200000b,50000s
-<C:/Program Files/MiKTeX 2.9/fonts/type1/publ
-ic/amsfonts/cm/cmmi10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfo
-nts/cm/cmmi7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cm
-r10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-<C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
-Output written on DataSetup.pdf (1 page, 58159 bytes).
+ 27i,12n,35p,290b,315s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Program Files/MiKTeX 2.9/fonts/type1/
+public/amsfonts/cm/cmbx10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/a
+msfonts/cm/cmbx7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/c
+m/cmex10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10
+.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/
+Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Program F
+iles/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKT
+eX 2.9/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Program Files/MiKTeX 2.9/fon
+ts/type1/public/amsfonts/cm/cmr7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/p
+ublic/amsfonts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/am
+sfonts/cm/cmsy5.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm
+/cmsy7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmtt10.p
+fb>
+Output written on DataSetup.pdf (4 pages, 143246 bytes).
 PDF statistics:
- 26 PDF objects out of 1000 (max. 8388607)
+ 67 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

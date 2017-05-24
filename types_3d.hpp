@@ -6,8 +6,7 @@
 #include <vector>
 #include <complex>
 
-#define PRECISION float
-#define COMPLEX
+#undef COMPLEX
 typedef unsigned int uint;
 
 using namespace std;
@@ -16,27 +15,34 @@ namespace FMM_3D{
     struct DTHandle{
         long id;
     };
-
     #ifdef COMPLEX
-        typedef complex<PRECISION> ElementType;
+        typedef complex<double> ElementType;
     #else
-        typedef PRECISION ElementType;
+        typedef double ElementType;
     #endif
     /*--------------------------------------------------------------------*/
     typedef enum dt_types{Box_type,Z,I,V,Kappa_type,F,F_tilde,G,R,T,E,Interpolation_type}DTTypes;
     class DTBase{
     public:
-        static long last_handle;
+        static long last_handle,data_count;
         int M,N,lead_dim,host,type,g_index;
         union{
             ElementType *mem,*data;
         };
         DTHandle *handle;
         string name;
+        void get_dims(int &m , int &n){
+            m = M;
+            n = N;
+        }
         void export_it(fstream &f){}
         DTBase(){
             handle = new DTHandle;
+            data_count ++;
             handle->id = last_handle++;
+        }
+        ~DTBase(){
+            data_count --;
         }
     };
     /*--------------------------------------------------------------------*/
@@ -67,17 +73,22 @@ namespace FMM_3D{
     class F_far;
     class Receiving;
     class F_far_tilde;
+    class Green;
+    class Exponential;
+    /*--------------------------------------------------------------------*/
     struct Box: public DTBase{
       Point         center;
       double        diagonal;
-      int           level,index;
+      int           level,index,edges;
       vector<Box*>  nf_int_list,ff_int_list,children;
-      vector<int >  nf_int_list_idx,ff_int_list_idx,children_idx,;
+      vector<int >  nf_int_list_idx,ff_int_list_idx,children_idx;
       GeneralArray  *I,*V;
       ZList         Z;
       F_far         *F;
       Receiving     *R;
+      Green         *G;
       F_far_tilde   *Ft;
+      Exponential   *E;
       Box();
     };
     typedef vector<Box*> BoxList;
@@ -147,6 +158,7 @@ namespace FMM_3D{
         Kappa_hat k;
     public:
         F_far_tilde(int m_, int level_,Kappa_hat &k_);
+        F_far_tilde(int m_, int level_,bool);
         F_far_tilde *get();
         void export_it(fstream &f);
     };
@@ -160,8 +172,8 @@ namespace FMM_3D{
     class Interpolation: public DTBase{
         int from, to;
         Kappa_hat k;
-        SparseMat *A1,*A2;
     public:
+        SparseMat *A1,*A2;
         Interpolation(int from_, int to_, Kappa_hat &k_);
         Interpolation *get();
         Interpolation(SparseMat *a, SparseMat *b):A1(a),A2(b){}
@@ -172,12 +184,13 @@ namespace FMM_3D{
         int i1,l1,i2,l2,i3,l3;
     public:
         Exponential( int j, int lv, int b_idx1, int lv1, int b_idx2, int lv2);
+        Exponential(int , int , bool);
         Exponential *get();
         void export_it(fstream &f);
     };
     /*--------------------------------------------------------------------*/
     class Translator: public DTBase{
-        int i1,l1,i2,l2,i3,l3;
+        int i1,i2,l1;
     public:
         Translator (int j, int box_idx1, int box_idx2, int level);
         Translator *get();
@@ -191,6 +204,8 @@ namespace FMM_3D{
         Kappa_hat k;
     public:
         Green(int m_, int level_, Kappa_hat &k_);
+        Green(int m_, int level_, bool);
+        Green *get();
         void export_it(fstream &f);
     };
     typedef vector<Green*> GList;
@@ -205,6 +220,7 @@ namespace FMM_3D{
         void set_size(int m, int n);
         void set_element(int , int , ElementType);
         void export_it(fstream &);
+        Receiving *get();
     };
     typedef vector<Receiving*> RList;
     /*--------------------------------------------------------------------*/
@@ -215,7 +231,7 @@ namespace FMM_3D{
         TList           T;
         GList           G;
         RList           R;
-        ElementType     *K_x,*K_y,*K_z;
+        ElementType     *K_theta,*K_phi;
         int             K_rows,K_cols;
         Interpolation   *P2C,*C2P;
 
@@ -236,7 +252,6 @@ namespace FMM_3D{
         }
         return L.size();
     }
-    /*--------------------------------------------------------------------*/
     /*=================================================================================*/
     int box_count(int level);
     void init();

@@ -1,0 +1,11 @@
+L max = 4
+finalize 46
+No. of tasks: 10
+No. of data: 5425
+No. of handles: 5425
+No. of MVP: 0
+No. of Interp: 0
+No. of GTrans: 0
+No. of GInter: 0
+No. of REceiving: 0
+No. of FarField: 0

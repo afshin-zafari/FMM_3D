@@ -14,8 +14,9 @@ namespace FMM_3D{
     void import_F               (const string fn);
     void import_R               (const string fn);
     void create_V               ();
-    void create_F_tilde         ();
+    void create_Far_fields      ();
     void create_Exponential     ();
+    void create_I               ();
 }
 #endif // SETUP_H
 

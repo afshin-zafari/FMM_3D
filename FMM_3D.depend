@@ -1,32 +1,34 @@
 # depslib dependency file v1.0
-1494771519 source:c:\afshin\fmm_3d\main.cpp
+1495121403 source:c:\afshin\fmm_3d\main.cpp
 	"fmm_3d.hpp"
+	<fstream>
 
-1488314021 c:\afshin\fmm_3d\fmm_3d.hpp
+1495100655 c:\afshin\fmm_3d\fmm_3d.hpp
 	"types_3d.hpp"
 	"types_dist.hpp"
+	"task_submission.h"
 
-1494774618 c:\afshin\fmm_3d\types_3d.hpp
+1495195715 c:\afshin\fmm_3d\types_3d.hpp
 	<iostream>
 	<fstream>
 	<vector>
 	<complex>
 
-1494774493 source:c:\afshin\fmm_3d\compute_3d.cpp
+1495100919 source:c:\afshin\fmm_3d\compute_3d.cpp
 	"fmm_3d.hpp"
 
-1494605916 c:\afshin\fmm_3d\types_dist.hpp
+1495178840 c:\afshin\fmm_3d\types_dist.hpp
 	<string>
 	<list>
 	<fstream>
 	"types_3d.hpp"
 
-1494773680 source:c:\afshin\fmm_3d\types_3d.cpp
+1494918356 source:c:\afshin\fmm_3d\types_3d.cpp
 	<assert.h>
 	<cmath>
 	"fmm_3d.hpp"
 
-1494605784 source:c:\afshin\fmm_3d\util_3d.cpp
+1495176222 source:c:\afshin\fmm_3d\util_3d.cpp
 	<cstring>
 	<assert.h>
 	"util_3d.hpp"
@@ -38,16 +40,26 @@
 	<cstdlib>
 	"types_3d.hpp"
 
-1494605936 source:c:\afshin\fmm_3d\types_dist.cpp
+1494918992 source:c:\afshin\fmm_3d\types_dist.cpp
 	"types_dist.hpp"
-
-1494776720 source:c:\afshin\fmm_3d\setup.cpp
-	"setup.h"
 	<cassert>
 
-1494606028 c:\afshin\fmm_3d\setup.h
+1495177187 source:c:\afshin\fmm_3d\setup.cpp
+	"setup.h"
+	<cassert>
+	<complex>
+	<random>
+
+1495175265 c:\afshin\fmm_3d\setup.h
 	<vector>
 	<cstdio>
 	<string>
 	"types_3d.hpp"
+
+1495208732 source:c:\afshin\fmm_3d\task_submission.cpp
+	"task_submission.h"
+
+1495627694 c:\afshin\fmm_3d\task_submission.h
+	"types_3d.hpp"
+	"types_dist.hpp"
 

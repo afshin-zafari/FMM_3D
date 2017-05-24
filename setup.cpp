@@ -1,5 +1,7 @@
 #include "setup.h"
 #include <cassert>
+#include <complex>
+#include <random>
 using std::vector;
 
 namespace FMM_3D{
@@ -14,18 +16,21 @@ namespace FMM_3D{
         M = new int[L];
         L_max=L;
 
-        //for(uint32_t ii=0;ii<L;ii++)tree->Level.push_back(new LevelBase);
-        tree->Level.resize(L);
+        for(uint32_t ii=0;ii<L;ii++)
+            tree->Level.push_back(new LevelBase);
+        //tree->Level.resize(L);
 
 
         for(uint32_t i=0;i<L;i++){
             fread(&l ,sizeof(uint32_t),1,f);
             assert(l==i+1);
-            tree->Level[i] = new LevelBase;
+            //LevelBase *ll=new LevelBase();
+            //tree->Level[i] = ll;
             fread(&nb,sizeof(uint32_t),1,f);
             tree->Level[i]->boxes.resize(nb);
             for(uint32_t ii=0;ii<nb;ii++){
-                tree->Level[i]->boxes[ii] = new Box;
+                Box *b = new Box();
+                tree->Level[i]->boxes[ii] = b;
             }
             M[i]=nb;
             for(uint32_t b=0;b<nb;b++){
@@ -46,7 +51,7 @@ namespace FMM_3D{
                     for(auto bb:B.ff_int_list_idx){
                         Box *bx = tree->Level[i]->boxes[bb-1];
                         assert(bx);
-                        B.ff_int_list.push_back(tree->Level[i]->boxes[bb-1]);
+                        B.ff_int_list.push_back(bx);
                     }
                 }
 
@@ -57,7 +62,7 @@ namespace FMM_3D{
                     for(auto bb:B.nf_int_list_idx){
                         Box *bx=tree->Level[i]->boxes[bb-1];
                         assert(bx);
-                        B.nf_int_list.push_back (tree->Level[i]->boxes[bb-1]);
+                        B.nf_int_list.push_back (bx);
                     }
                 }
 
@@ -77,7 +82,7 @@ namespace FMM_3D{
     }
     /*---------------------------------------------------------------------------*/
 
-    void import_translators(const string fn){
+    void import_translators(const string fn){//todo no of xlators and how to find them is to be changed
         FILE *f=fopen(fn.c_str(),"rb");
         int L,level;
         fread(&L,sizeof(uint32_t),1,f);
@@ -149,54 +154,56 @@ namespace FMM_3D{
             fread(&Level.K_rows,sizeof(uint32_t),1,f);
             fread(&Level.K_cols,sizeof(uint32_t),1,f);
             n = Level.K_cols*Level.K_rows;
-            Level.K_x = new ElementType[n];
-            fread(Level.K_x ,sizeof(ElementType),n,f);
-            Level.K_y = new ElementType[n];
-            fread(Level.K_y ,sizeof(ElementType),n,f);
-            Level.K_z = new ElementType[n];
-            fread(Level.K_z ,sizeof(ElementType),n,f);
+            Level.K_theta = new ElementType[n];
+            K[level-1] = n;
+            fread(Level.K_theta ,sizeof(ElementType),n,f);
+            Level.K_phi = new ElementType[n];
+            fread(Level.K_phi ,sizeof(ElementType),n,f);
         }
         fclose(f);
     }
     /*--------------------------------------------------------------------------------*/
     void import_Z(const string fn){
         FILE *f = fopen(fn.c_str(),"rb");
-        uint32_t nb,level,M,N,box,near;
+        uint32_t nb,level,M,N,box,near,nn;
         level = tree->Level.size(); // The last level
         LevelBase &Level=*tree->Level[level-1];
         fread (&nb,sizeof(uint32_t),1,f);
         for(uint32_t i=0;i<nb;i++){
-            fread (&box,sizeof(uint32_t),1,f);
-            fread (&near,sizeof(uint32_t),1,f);
-            fread (&M,sizeof(uint32_t),1,f);
-            fread (&N,sizeof(uint32_t),1,f);
-            Z_near * Z = new Z_near(M,N,true);
-            fread (Z->data,sizeof(ElementType),M*N,f);
-            Box &bBox=*Level.boxes[box-1];
-            bBox.Z.indx.push_back(near);
-            bBox.Z.data.push_back(Z);
+            fread (&nn,sizeof(uint32_t),1,f);
+            for(uint32_t j=0;j<nn;j++){
+                fread (&box,sizeof(uint32_t),1,f);
+                fread (&near,sizeof(uint32_t),1,f);
+                fread (&M,sizeof(uint32_t),1,f);
+                fread (&N,sizeof(uint32_t),1,f);
+                Z_near * Z = new Z_near(M,N,true);
+                fread (Z->data,sizeof(std::complex<ElementType>),M*N,f);
+                Box &bBox=*Level.boxes[box-1];
+                bBox.Z.indx.push_back(near);
+                bBox.Z.data.push_back(Z);
+            }
         }
         fclose(f);
 
     }
     /*--------------------------------------------------------------------------------*/
-    void import_I(const string fn){
-        FILE *f = fopen(fn.c_str(),"rb");
-        uint32_t nb,level,M,N,box;
+    void create_I(){
+        uint32_t nb,level,M,N;
         level = tree->Level.size(); // The last level
         LevelBase &Level=*tree->Level[level-1];
-        fread (&nb,sizeof(uint32_t),1,f);
-        for(uint32_t i=0;i<nb;i++){
-            fread (&box,sizeof(uint32_t),1,f);
-            fread (&M,sizeof(uint32_t),1,f);
-            fread (&N,sizeof(uint32_t),1,f);
-            I_vect * I = new I_vect(M,N,true);
-            fread (I->data,sizeof(ElementType),M*N,f);
-            Box &bBox=*Level.boxes[box-1];
-            bBox.I = I ;
+        nb = Level.boxes.size();
+        for ( uint32_t b=0;b<nb;b++){
+            Box &box = *Level.boxes[b];
+            I_vect *I = new I_vect(M,N,true);
+            M = box.edges;// todo : how many edges does a box have? import it from setup
+            N=1;
+            for ( uint32_t i=0;i<M;i++){
+                for (uint32_t j=0;j<N;j++){
+                    I->data[j*M+i] = std::rand();///std::RAND_MAX;
+                }
+            }
+            box.I = I;
         }
-        fclose(f);
-
     }
     /*--------------------------------------------------------------------------------*/
     void import_F(const string fn){
@@ -249,8 +256,19 @@ namespace FMM_3D{
         }
     }
     /*--------------------------------------------------------------------------------*/
-    void create_F_tilde(){//todo
+    void create_Far_fields(){
+        uint32_t L,n;
+        L = L_max;
+        for(uint32_t i=0;i<L;i++){
+            n = K[i] ;
+            uint32_t nb = tree->Level[i]->boxes.size();
+            for(uint32_t b=0;b<nb;b++){
+                Box &box=*tree->Level[i]->boxes[b];
+                box.Ft = new F_far_tilde(n,1,true);
+                box.G  = new Green(n,1,true);
+                box.E  = new Exponential(n,1,true);
+            }
+        }
     }
-    void create_Exponential(){//todo
-    }
+    /*--------------------------------------------------------------------------------*/
 }

@@ -11,6 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="&gt;a.txt" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -38,6 +39,8 @@
 		<Unit filename="main.cpp" />
 		<Unit filename="setup.cpp" />
 		<Unit filename="setup.h" />
+		<Unit filename="task_submission.cpp" />
+		<Unit filename="task_submission.h" />
 		<Unit filename="types_3d.cpp" />
 		<Unit filename="types_3d.hpp" />
 		<Unit filename="types_dist.cpp" />
