@@ -5,7 +5,6 @@
 using std::vector;
 
 namespace FMM_3D{
-
     void import_boxes_binary(const string fn){
         uint32_t L,l,nb,nc,nf,ff;
         FILE *f=fopen(fn.c_str(),"rb");
@@ -82,23 +81,23 @@ namespace FMM_3D{
     }
     /*---------------------------------------------------------------------------*/
 
-    void import_translators(const string fn){//todo no of xlators and how to find them is to be changed
+    void import_translators(const string fn){
         FILE *f=fopen(fn.c_str(),"rb");
         int L,level;
         fread(&L,sizeof(uint32_t),1,f);
         for(int i =0; i<L;i++){
             fread(&level,sizeof(uint32_t),1,f);
             TList &t=tree->Level[level-1]->T;
-            uint32_t nd,M,N,d;
+            uint32_t nd,M,N,d[3];
             ElementType *Trans;
             fread(&nd,sizeof(uint32_t),1,f);
             for ( uint32_t j=0;j<nd;j++){
-                fread(&d,sizeof(uint32_t),1,f);
+                fread(&d[0],sizeof(uint32_t),3,f);
                 fread(&M,sizeof(uint32_t),1,f);
                 fread(&N,sizeof(uint32_t),1,f);
                 Trans = new ElementType[M*N];
                 fread(Trans,sizeof(ElementType),M*N,f);
-                t.push_back(new Translator(M,N,Trans));
+                t.push_back(new Translator(d, M,N,Trans));
             }
         }
         fclose(f);
@@ -165,23 +164,21 @@ namespace FMM_3D{
     /*--------------------------------------------------------------------------------*/
     void import_Z(const string fn){
         FILE *f = fopen(fn.c_str(),"rb");
-        uint32_t nb,level,M,N,box,near,nn;
+        uint32_t nb,level,M,N,box,near;
         level = tree->Level.size(); // The last level
         LevelBase &Level=*tree->Level[level-1];
         fread (&nb,sizeof(uint32_t),1,f);
-        for(uint32_t i=0;i<nb;i++){
-            fread (&nn,sizeof(uint32_t),1,f);
-            for(uint32_t j=0;j<nn;j++){
-                fread (&box,sizeof(uint32_t),1,f);
-                fread (&near,sizeof(uint32_t),1,f);
-                fread (&M,sizeof(uint32_t),1,f);
-                fread (&N,sizeof(uint32_t),1,f);
-                Z_near * Z = new Z_near(M,N,true);
-                fread (Z->data,sizeof(std::complex<ElementType>),M*N,f);
-                Box &bBox=*Level.boxes[box-1];
-                bBox.Z.indx.push_back(near);
-                bBox.Z.data.push_back(Z);
-            }
+        while (!feof(f)){
+            fread (&box,sizeof(uint32_t),1,f);
+            fread (&near,sizeof(uint32_t),1,f);
+            fread (&M,sizeof(uint32_t),1,f);
+            fread (&N,sizeof(uint32_t),1,f);
+            Z_near * Z = new Z_near(M,N,true);
+            fread (Z->data,sizeof(std::complex<ElementType>),M*N,f);
+            Box &bBox=*Level.boxes[box-1];
+            bBox.edges = M;
+            bBox.Z.indx.push_back(near);
+            bBox.Z.data.push_back(Z);
         }
         fclose(f);
 
@@ -194,9 +191,9 @@ namespace FMM_3D{
         nb = Level.boxes.size();
         for ( uint32_t b=0;b<nb;b++){
             Box &box = *Level.boxes[b];
+            M = box.edges;
+            N = 1;
             I_vect *I = new I_vect(M,N,true);
-            M = box.edges;// todo : how many edges does a box have? import it from setup
-            N=1;
             for ( uint32_t i=0;i<M;i++){
                 for (uint32_t j=0;j<N;j++){
                     I->data[j*M+i] = std::rand();///std::RAND_MAX;
@@ -271,4 +268,6 @@ namespace FMM_3D{
         }
     }
     /*--------------------------------------------------------------------------------*/
+    /*--------------------------------------------------------------------------------*/
+
 }

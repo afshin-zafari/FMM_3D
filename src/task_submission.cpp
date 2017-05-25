@@ -14,8 +14,7 @@ namespace FMM_3D{
         GData &V = *mainV;
 
         for(int gi = 0;gi<g; gi++){
-            if ( gi ==0)
-                fmm_engine->add_task( new FFLTask (              F(L_max,gi)));
+            if ( gi ==0)fmm_engine->add_task( new FFLTask (              F(L_max,gi)));
             else
                 fmm_engine->add_task( new FFLTask (F(L_max,gi-1),F(L_max,gi)));
         }
@@ -40,7 +39,9 @@ namespace FMM_3D{
                 fmm_engine->add_task( new RCVTask (              G(L_max,gi),V(0,gi)));
             else
                 fmm_engine->add_task( new RCVTask (G(L_max,gi-1),G(L_max,gi),V(0,gi)));
+            fmm_engine->add_task( new NFLTask (F(L_max/2,gi),gi));
         }
+
     }
     /*------------------------------------------------------------------------*/
     void FFLTask::run(){
@@ -68,6 +69,9 @@ namespace FMM_3D{
         }
     }
     /*------------------------------------------------------------------------*/
+    void ffl_task::run(){//todo
+    }
+    /*------------------------------------------------------------------------*/
     void C2PTask::run(){
         GData &A = *d2;
         GData &B = *d3;
@@ -93,6 +97,9 @@ namespace FMM_3D{
                 batch_work=0.0;
             }
         }
+    }
+    /*------------------------------------------------------------------------*/
+    void c2p_task::run(){//todo
     }
     /*------------------------------------------------------------------------*/
     void XLTTask::run(){
@@ -127,6 +134,9 @@ namespace FMM_3D{
         }
     }
     /*------------------------------------------------------------------------*/
+    void xlt_task::run(){//todo
+    }
+    /*------------------------------------------------------------------------*/
     void P2CTask::run(){
         GData &A = *d1;
         GData &B = *d2;
@@ -135,7 +145,43 @@ namespace FMM_3D{
         }
     }
     /*------------------------------------------------------------------------*/
-    void NFLTask::run(){}//todo
+    void RCVTask::run(){
+        GData &A = *d1;
+        GData &B = *d2;
+        for(int i=0;i<part_count;i++){
+            fmm_engine->add_task ( new rcvTask(A[i],B[i]));
+        }
+    }
+    /*------------------------------------------------------------------------*/
+    void rcvTask::run(){//todo
+        fmm_engine->add_task(new rcv_task(d1,d2));
+    }
+    /*------------------------------------------------------------------------*/
+    void rcv_task::run(){//todo
+    }
+    /*------------------------------------------------------------------------*/
+    void NFLTask::run(){
+        for (int i=0;i<part_count ;i++){
+            fmm_engine->add_task(new nflTask(group,i));
+        }
+    }
+    /*------------------------------------------------------------------------*/
+    void nflTask::run(){
+        /* for b1 in F(L_max,group)[part].boxes
+            for b2 in b.near_field
+                add task VZI (b1,b2)
+        */
+        GData &F = *mainF;
+        BoxList &boxes =  F(L_max,group)[part].boxes;
+        for ( Box *b1: boxes){
+            for (Box *b2 : b1->nf_int_list ){
+                fmm_engine->add_task( new nfl_task(b1->index,b2->index));
+            }
+        }
+    }
+    /*------------------------------------------------------------------------*/
+    void nfl_task::run(){//todo
+    }
     /*------------------------------------------------------------------------*/
     void p2cTask::run( ){
 
@@ -156,6 +202,9 @@ namespace FMM_3D{
                 }
             }
         }
+    }
+    /*------------------------------------------------------------------------*/
+    void p2c_task::run(){//todo
     }
     /*------------------------------------------------------------------------*/
     double get_c2p_work(Box *c){
@@ -200,11 +249,6 @@ namespace FMM_3D{
     }
     /*----------------------------------------------------------------------*/
     void NFL_tasks ( GData & dep,int chunk_no, int chunks_count){
-        GData &G = *mainG;
-        for(int gi = 0;gi<g; gi++){//todo: How can we make it to run only when no other tasks can run?
-            for(int gj = 0;gj<g; gj++){
-                fmm_engine->add_task ( new NFLTask(dep,G(L_max,gi),G(L_max,gj)));
-            }
-        }
     }
+    /*----------------------------------------------------------------------*/
 }

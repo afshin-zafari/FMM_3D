@@ -26,6 +26,7 @@ typedef enum key {MVP,
 class SGTask {
 public:
     double work;
+    virtual void run()=0;
 };
 class DTTask
 {

@@ -1,69 +1,81 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="setup.cpp" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include\types_3d.hpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="6421" topLine="164" />
+			<Cursor1 position="166" topLine="22" />
 		</Cursor>
 	</File>
-	<File name="setup.h" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\task_submission.cpp" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="623" topLine="0" />
+			<Cursor1 position="7300" topLine="188" />
 		</Cursor>
 	</File>
-	<File name="main.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\setup.cpp" open="1" top="1" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="567" topLine="0" />
+			<Cursor1 position="10837" topLine="268" />
 		</Cursor>
 	</File>
-	<File name="util_3d.cpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\compute_3d.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="10650" topLine="282" />
+			<Cursor1 position="573" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="util_3d.hpp" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include\fmm_3d.hpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2020" topLine="19" />
+			<Cursor1 position="0" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="task_submission.h" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include\task_submission.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1597" topLine="34" />
+			<Cursor1 position="2018" topLine="62" />
+		</Cursor>
+		<Folding>
+			<Collapse line="117" />
+			<Collapse line="133" />
+			<Collapse line="149" />
+			<Collapse line="160" />
+			<Collapse line="171" />
+			<Collapse line="189" />
+			<Collapse line="200" />
+			<Collapse line="208" />
+			<Collapse line="219" />
+			<Collapse line="227" />
+			<Collapse line="235" />
+			<Collapse line="240" />
+			<Collapse line="251" />
+			<Collapse line="264" />
+		</Folding>
+	</File>
+	<File name="include\setup.h" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="471" topLine="10" />
 		</Cursor>
 	</File>
-	<File name="types_3d.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include\types_dist.hpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="5491" topLine="125" />
+			<Cursor1 position="0" topLine="22" />
 		</Cursor>
+		<Folding>
+			<Collapse line="11" />
+			<Collapse line="25" />
+			<Collapse line="30" />
+			<Collapse line="41" />
+			<Collapse line="65" />
+			<Collapse line="90" />
+			<Collapse line="115" />
+			<Collapse line="141" />
+			<Collapse line="166" />
+			<Collapse line="190" />
+		</Folding>
 	</File>
-	<File name="types_dist.hpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include\util_3d.hpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="4559" topLine="171" />
+			<Cursor1 position="230" topLine="0" />
 		</Cursor>
-	</File>
-	<File name="task_submission.cpp" open="1" top="1" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="5115" topLine="132" />
-		</Cursor>
-	</File>
-	<File name="types_dist.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="4042" topLine="75" />
-		</Cursor>
-	</File>
-	<File name="types_3d.hpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2163" topLine="54" />
-		</Cursor>
-	</File>
-	<File name="compute_3d.cpp" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="3252" topLine="68" />
-		</Cursor>
-	</File>
-	<File name="fmm_3d.hpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="80" topLine="0" />
-		</Cursor>
+		<Folding>
+			<Collapse line="8" />
+			<Collapse line="39" />
+		</Folding>
 	</File>
 </CodeBlocks_layout_file>

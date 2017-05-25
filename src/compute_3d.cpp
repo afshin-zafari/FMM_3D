@@ -1,6 +1,7 @@
 #include "fmm_3d.hpp"
 namespace FMM_3D{
 
+
     int L_max,L_min,*K,*M;
     int box_count(int level){return  M[level-1];}
     int kappa_count(int level){return  K[level-1];}
@@ -32,8 +33,15 @@ namespace FMM_3D{
     }
 
     /*--------------------------------------------------------------------*/
+    void read_parameters(){
+        Parameters.m  = 4;
+        Parameters.B1 = 4;
+        Parameters.B2 = 4;
+    }
+    /*--------------------------------------------------------------------*/
     void init(){
         fmm_engine = new FMMContext;
+        read_parameters();
         tree = new Tree;
         g = 1;
         import_setup();

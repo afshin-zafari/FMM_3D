@@ -5,6 +5,7 @@ namespace FMM_3D{
     long DTBase::last_handle=0;
     long DTBase::data_count=0;
     Tree *tree;
+    Parameters_t Parameters;
     FMMContext *fmm_engine;
     /*---------------------------------------------------------------------------------------*/
     Box *get_box_dep(int index, int level){
@@ -103,7 +104,7 @@ namespace FMM_3D{
         host = -1;
     }
     /*---------------------------------------------------------------------------------------*/
-    Z_near::Z_near(int m,int n){}//todo
+    Z_near::Z_near(int m,int n){}
     Z_near::Z_near(int m,int n,bool){
         M = m;
         N = n;
@@ -142,7 +143,7 @@ namespace FMM_3D{
         host = b.host;
     }
     /*---------------------------------------------------------------------------------------*/
-    F_far::F_far(int m,int n){}//todo
+    F_far::F_far(int m,int n){}
     F_far::F_far(int m,int n,bool){
         M = m;
         N = n;
@@ -200,6 +201,46 @@ namespace FMM_3D{
             f << ")";
             DTBase::export_it(f);
      }
+    /*---------------------------------------------------------------------------------------*/
+    ElementType &F_far_tilde::get_element(int i, int j){
+        return data[j*M+i];
+    }
+    /*---------------------------------------------------------------------------------------*/
+    void F_far_tilde::set_element(int i, int j, ElementType v){
+        data[j*M+i] = v;
+    }
+    /*---------------------------------------------------------------------------------------*/
+    void F_far_tilde::expand(){
+        int m=Parameters.m;
+        //assumption: F~ has Mx(m/2+N+m/2) dims
+        /*  m/2  ----N----  m/2
+            l k  a b c d e  o n
+            g f  f g h i j  j i
+            b a  k l m n o  e d
+        */
+        for (int i=0;i<M;i++){
+            for (int j=0;j<N;j++){
+            // F(i,j) = F(M-i-1,m-j)        ; i<M/2 j<m/2
+            if (i <  M/2 and  j<m/2)
+                set_element(i,j,get_element(M-i-1,m-j));
+            // F(i,j) = F(M-i-1,2*N+m-1-j)  ; i<M/2 j>N+m/2
+            if ( i<M/2 and j >(N+m/2))
+                set_element(i,j,get_element(M-i-1,2*N+m-1-j));
+            // F(i,j) = F(M-i-1,m-j)        ; i>M/2 j<m/2
+            if ( i>M/2 and j <(m/2))
+                set_element(i,j,get_element(M-i-1,m-j));
+            // F(i,j) = F(M-i-1,2*N+m-1-j)  ; i>M/2 j>N+m/2
+            if ( i>M/2 and j >(N+m/2))
+                set_element(i,j,get_element(M-i-1,2*N+m-1-j));
+            // F(i,j) = F(i    ,m-j)        ; i=M/2 j<m/2
+            if ( i==M/2 and j<m/2)
+                set_element(i,j,get_element(i,m-j));
+            // F(i,j) = F(i    ,2*N+m-1-j)  ; i=M/2 j>N+m/2
+            if ( i==M/2 and j>(2*N+m/2))
+                set_element(i,j,get_element(i,2*N+m-1-j));
+            }
+        }
+    }
     /*---------------------------------------------------------------------------------------*/
     Interpolation::Interpolation(int from_, int to_, Kappa_hat &k_):from(from_),to(to_),k(k_){
         name.assign("Interp");
@@ -263,7 +304,8 @@ namespace FMM_3D{
             DTBase::export_it(f);
      }
     /*---------------------------------------------------------------------------------------*/
-    Translator::Translator(int M_, int N_, ElementType* mat){
+    Translator::Translator(uint32_t d_[],int M_, int N_, ElementType* mat){
+        d[0]=d_[0];d[1]=d_[1];d[2]=d_[2];
         M=M_;
         N=N_;
         data=mat;
@@ -346,7 +388,7 @@ namespace FMM_3D{
         host = b.host;
     }
     /*---------------------------------------------------------------------------------------*/
-    Receiving::Receiving(int m,int n){//todo
+    Receiving::Receiving(int m,int n){
     }
     /*---------------------------------------------------------------------------------------*/
     Receiving *Receiving::get(){

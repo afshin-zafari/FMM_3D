@@ -5,6 +5,7 @@
 #include <string>
 #include "types_3d.hpp"
 namespace FMM_3D{
+    /*---------------------------------------------------------------*/
     void import_boxes_binary    (const string fn);
     void import_translators     (const string fn);
     void import_interpolators   (const string fn);
@@ -17,6 +18,7 @@ namespace FMM_3D{
     void create_Far_fields      ();
     void create_Exponential     ();
     void create_I               ();
+    void extend_F               (F_far_tilde *F);
 }
 #endif // SETUP_H
 

@@ -12,6 +12,19 @@ typedef unsigned int uint;
 using namespace std;
 namespace FMM_3D{
     extern int L_max,L_min,*K,*M;
+    /*---------------------------------------------------------------*/
+    typedef struct{
+        union{// no. of blocks in first level
+            int B1,groups,g,group_count;
+        };
+        union {// no. of blocks in second level
+            int B2,parts,part_count;
+        };
+        union {// interpolation points
+            int interp_points,m;
+        };
+    }Parameters_t;
+    extern Parameters_t Parameters;
     struct DTHandle{
         long id;
     };
@@ -161,6 +174,9 @@ namespace FMM_3D{
         F_far_tilde(int m_, int level_,bool);
         F_far_tilde *get();
         void export_it(fstream &f);
+        ElementType &get_element(int i , int j);
+        void set_element(int i, int j, ElementType v);
+        void expand();
     };
     typedef vector<F_far_tilde *> F_tilde_List;
     /*--------------------------------------------------------------------*/
@@ -190,11 +206,11 @@ namespace FMM_3D{
     };
     /*--------------------------------------------------------------------*/
     class Translator: public DTBase{
-        int i1,i2,l1;
+        int i1,i2,l1,d[3];
     public:
         Translator (int j, int box_idx1, int box_idx2, int level);
         Translator *get();
-        Translator (int M, int N,ElementType *);
+        Translator (uint32_t d[],int M, int N,ElementType *);
         void export_it(fstream &f);
      };
     typedef vector<Translator*> TList;
