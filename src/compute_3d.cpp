@@ -34,16 +34,17 @@ namespace FMM_3D{
 
     /*--------------------------------------------------------------------*/
     void read_parameters(){
-        Parameters.m  = 4;
+        Parameters.m  = 6;
         Parameters.B1 = 4;
         Parameters.B2 = 4;
+        Parameters.group_count =  4;
+        Parameters.work_min = 200*100*100/2.0;
     }
     /*--------------------------------------------------------------------*/
     void init(){
         fmm_engine = new FMMContext;
         read_parameters();
         tree = new Tree;
-        g = 1;
         import_setup();
         export_setup();
         L_min = 1;
@@ -56,7 +57,7 @@ namespace FMM_3D{
         delete [] K;
         delete [] M;
         delete tree;
-        delete fmm_engine;
+//        delete fmm_engine;
     }
     /*--------------------------------------------------------------------*/
     void compute_near_field(){

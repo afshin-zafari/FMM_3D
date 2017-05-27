@@ -14,18 +14,17 @@ typedef enum key {MVP,
         Green_Translate,
         Green_Interpolate,
         Receiving_Key,
-        FarField_key,
-        DT_FFL,
-        DT_C2P,
-        DT_XLT,
-        DT_P2C,
-        DT_NFL,
-        DT_RCV
+        FarField_key, //5
+        DT_FFL,        DT_C2P,        DT_XLT,        DT_P2C,        DT_NFL,        DT_RCV,//11
+        DT_ffl,        DT_c2p,        DT_xlt,        DT_p2c,        DT_nfl,        DT_rcv,//17
+        SG_ffl,        SG_c2p,        SG_xlt,        SG_p2c,        SG_nfl,        SG_rcv,//23
+        NUM_TASK_KEYS
     } TaskKey;
 /*--------------------------------------------------------------------*/
 class SGTask {
 public:
     double work;
+    int key;
     virtual void run()=0;
 };
 class DTTask
@@ -192,15 +191,24 @@ class FMMContext
 {
 private:
     list<DTTask*> tasks;
+    list<SGTask*> mu_tasks;
 public:
     //enum TASKS{ MVP,Interpolation_Key, Green_Translate, Green_Interpolate, Receiving_Key};
-    long counts[11];
+    long counts[NUM_TASK_KEYS+1];
+    ~FMMContext(){
+        tasks.clear();
+        mu_tasks.clear();
+    }
     FMMContext(){
-        for ( int i=0;i<11;i++)
+        for ( int i=0;i<NUM_TASK_KEYS+1;i++)
             counts[i]=0;
     }
     /*--------------------------------------------------------------------*/
-    void add_task( SGTask *){}
+    void add_task(SGTask *t){
+        counts[t->key]++;
+        mu_tasks.push_back(t);
+    }
+    /*--------------------------------------------------------------------*/
     void add_task(DTTask *t)
     {
         counts[t->key]++;

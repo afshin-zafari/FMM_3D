@@ -7,84 +7,10 @@ namespace FMM_3D{
     /*======================================================================*/
     class TopLayerData: public DTBase{
     private:
-        int M,N,y,x,part_no;
+        int M,N,y,x;
+        uint32_t part_no,ng,np;
         vector<TopLayerData*> groups,parts;
         typedef TopLayerData GData;
-    /*---------------------------------------------------*/
-        void make_groups(){
-            uint32_t ng  = N;
-            int nb=0,bpg,nbl;
-            TopLayerData &D=(*this)(0,0);
-            LevelBase &Level=*tree->Level[0];
-            D.boxes.push_back(Level.boxes[0]);
-
-            for(int L=1;L<=L_max;L++){
-                GData &parent = (*this)(L-1,x);
-                nbl =tree->Level[L]->boxes.size();
-                bpg = nbl/ng+1;
-                nb = 0;
-                uint32_t gi=0;
-                for(Box *b : parent.boxes ){
-                    for(Box *c: b->children){
-                        GData &child  = (*this)(L,gi);
-                        child.boxes.push_back(c);
-                        nb++;
-                        if ( nb > bpg and L == 1){
-                            nb=0;
-                            if (gi< ng-1)
-                                gi++;
-                        }
-                    }
-                    if ( nb > bpg ){
-                        nb = 0;
-                        if ( gi< ng-1 )
-                            gi++;
-                    }
-                }
-            }
-        }
-        void make_partitions(){
-            // assumptions : this is at the top layer
-            TopLayerData &D=(*this)(0,0);
-            LevelBase &Level=*tree->Level[0];
-            //create a single part for the root
-            D.parts.push_back(new GData(0,0,0,true));
-            D.parts[0]->boxes.push_back(Level.boxes[0]);
-            int np=Parameters.part_count,nb=0;
-            for (int L=1;L<L_max;L++){
-                int ng = Parameters.group_count;
-                for (int gi=0;gi<ng;gi++){
-                    GData &parent = (*this)(L-1,gi);
-                    int bpp = parent.boxes.size() / np;
-                    for (int pi=0;pi<np;pi++ ){
-                        GData &dc = (*this)(L,gi);
-                        dc.parts.push_back(new GData (L,gi,pi,true) );
-                        BoxList &pbx=parent.parts[pi]->boxes;
-                        for(Box * pb:pbx){
-                            for(Box *cb: pb->children){
-                                dc.parts[pi]->boxes.push_back(cb);
-                                nb++;
-                                if (nb > bpp and L == 1){
-                                    nb = 0;
-                                    if ( pi < np-1)
-                                        pi++;
-                                }
-                            }
-                            if (nb > bpp){
-                                nb = 0;
-                                if ( pi < np-1)
-                                    pi++;
-                            }
-                        }
-
-                    }
-
-
-                }
-            }
-
-        }
-    /*---------------------------------------------------*/
     /*---------------------------------------------------*/
     public:
         BoxList boxes;
@@ -92,8 +18,12 @@ namespace FMM_3D{
         TopLayerData(int row, int col, int part, bool):y(row),x(col),part_no(part){}
         int get_row(){return y;}
         int get_col(){return x;}
+        int part_count(){return parts.size();}
+        void make_groups();
+        void make_partitions();
     /*---------------------------------------------------*/
-        TopLayerData(int M_, int N_,int ng):M(M_),N(N_){
+    // End user program interface for defining GData
+        TopLayerData(int M_, int N_,int np_):M(M_),N(N_),ng(N_),np(np_){
             for(int j=0;j<N;j++){
                 for(int i=0;i<M;i++){
                     groups.push_back(new TopLayerData(i,j));
@@ -116,6 +46,8 @@ namespace FMM_3D{
         }
     /*---------------------------------------------------*/
         TopLayerData &operator[](int i){
+            int n = parts.size();
+            (void)n;
             return *parts[i];
         }
     /*---------------------------------------------------*/
@@ -153,7 +85,6 @@ namespace FMM_3D{
     typedef TopLayerData GData;
     /*---------------------------------------------------*/
     extern FMM_3D::GData *mainF,*mainG;
-    extern int g,part_count;
     /*======================================================================*/
     class FFLTask: public DTTask{
     public:
@@ -234,12 +165,12 @@ namespace FMM_3D{
             d3 = &d2_;
             d2 = &d1_;
             d1 = nullptr;
-            key= DT_RCV;
+            key= DT_rcv;
         }
 
         rcvTask(GData &d1_,GData &d2_,GData &d3_){
             d1 = &d1_;d2 = &d2_;d3 = &d3_;
-            key= DT_RCV;
+            key= DT_rcv;
         }
         void run();
         void export_it(fstream &){}
@@ -248,7 +179,9 @@ namespace FMM_3D{
     /*======================================================================*/
     class rcv_task : public SGTask{
     public:
-        rcv_task(GData *,GData *){}
+        rcv_task(GData *,GData *){
+            key = SG_rcv;
+        }
         void run();
     };
     /*======================================================================*/
@@ -267,7 +200,9 @@ namespace FMM_3D{
     class nflTask : public DTTask {
     public:
         int group,part;
-        nflTask(int g,int i):group(g),part(i){}
+        nflTask(int g,int i):group(g),part(i){
+            key= DT_nfl;
+        }
         void run();
         void export_it(fstream &){}
     };
@@ -275,14 +210,19 @@ namespace FMM_3D{
     class nfl_task : public SGTask {
     public:
         int bi,bj;
-        nfl_task(int i,int j):bi(i),bj(j){}
+        nfl_task(int i,int j):bi(i),bj(j){
+            key = SG_nfl;
+        }
         void run();
     };
     /*======================================================================*/
     class fflTask: public DTTask{
     public:
-        GData *d1,*d2;
-        fflTask(GData &, GData &){}
+        GData *d;
+        fflTask(GData &d_){
+            d = &d_;
+            key = DT_ffl;
+        }
         void run();
         void export_it ( fstream &){}
     };
@@ -290,7 +230,11 @@ namespace FMM_3D{
     class c2pTask: public DTTask{
     public:
         GData *d1,*d2;
-        c2pTask(GData &, GData &){}
+        c2pTask(GData &c, GData &p){
+            d1 = &c;
+            d2 = &p;
+            key = DT_c2p;
+        }
         void run();
         void export_it ( fstream &){}
     };
@@ -300,30 +244,42 @@ namespace FMM_3D{
     typedef std::vector<F2GPair*>  F2GList;
     class xltTask: public DTTask{
     public:
-    GData *d1,*d2,*d3;
-        xltTask(GData &, GData &){}
+        GData *d1,*d2;
+        xltTask(GData &from, GData &to){
+            d1 = &from;
+            d2 = &to;
+            key = DT_xlt;
+        }
         void run();
         void export_it ( fstream &){}
     };
     /*======================================================================*/
     class p2cTask: public DTTask{
     public:
-        GData *d1,*d2,*d3;
-        p2cTask(GData &, GData &){}
+        GData *d1,*d2;
+        p2cTask(GData &p, GData &c){
+            d1 = &p;
+            d2 = &c;
+            key = DT_p2c;
+        }
         void run();
         void export_it ( fstream &){}
     };
     /*======================================================================*/
     class c2p_task : public SGTask{
     public :
-        c2p_task ( BoxList * ){}
+        c2p_task ( BoxList * ){
+            key = SG_c2p;
+        }
         void run();
     };
     /*======================================================================*/
     class ffl_task : public SGTask{
         BoxList *batch;
     public:
-        ffl_task  (BoxList *){}
+        ffl_task  (BoxList *){
+            key = SG_ffl;
+        }
         ~ffl_task  (){
             if ( !batch)
                 return;
@@ -335,7 +291,9 @@ namespace FMM_3D{
     class xlt_task : public SGTask{
         F2GList* batch;
     public:
-        xlt_task (F2GList*b):batch(b){}
+        xlt_task (F2GList*b):batch(b){
+            key = SG_xlt;
+        }
         ~xlt_task (){
             if ( !batch)
                 return;
@@ -349,7 +307,9 @@ namespace FMM_3D{
     class p2c_task : public SGTask{
         BoxList *batch;
     public:
-        p2c_task (BoxList * ){}
+        p2c_task (BoxList * ){
+            key = SG_p2c;
+        }
         void run();
     };
     /*======================================================================*/
@@ -359,5 +319,6 @@ namespace FMM_3D{
     double get_ffl_work(Box *);
     void fmm_taskified();
     void NFL_tasks ( GData & dep,int chunk_no, int chunks_count);
+    bool is_box_in_list(BoxList &boxes, Box * b);
 }
 #endif // TASK_SUBMISSION_HPP

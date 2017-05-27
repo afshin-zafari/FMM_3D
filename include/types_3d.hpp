@@ -23,16 +23,14 @@ namespace FMM_3D{
         union {// interpolation points
             int interp_points,m;
         };
+        double work_min;
     }Parameters_t;
     extern Parameters_t Parameters;
     struct DTHandle{
         long id;
     };
-    #ifdef COMPLEX
-        typedef complex<double> ElementType;
-    #else
-        typedef double ElementType;
-    #endif
+    typedef complex<double> ComplexElementType;
+    typedef double ElementType;
     /*--------------------------------------------------------------------*/
     typedef enum dt_types{Box_type,Z,I,V,Kappa_type,F,F_tilde,G,R,T,E,Interpolation_type}DTTypes;
     class DTBase{
@@ -42,6 +40,7 @@ namespace FMM_3D{
         union{
             ElementType *mem,*data;
         };
+        ComplexElementType *complex_data;
         DTHandle *handle;
         string name;
         void get_dims(int &m , int &n){
@@ -92,11 +91,12 @@ namespace FMM_3D{
     struct Box: public DTBase{
       Point         center;
       double        diagonal;
-      int           level,index,edges;
+      int           level,index,edges,group,part;
+      Box           *parent;
       vector<Box*>  nf_int_list,ff_int_list,children;
       vector<int >  nf_int_list_idx,ff_int_list_idx,children_idx;
       GeneralArray  *I,*V;
-      ZList         Z;
+      ZList          Z;
       F_far         *F;
       Receiving     *R;
       Green         *G;
@@ -210,7 +210,7 @@ namespace FMM_3D{
     public:
         Translator (int j, int box_idx1, int box_idx2, int level);
         Translator *get();
-        Translator (uint32_t d[],int M, int N,ElementType *);
+        Translator (int32_t d[],int M, int N,ComplexElementType *);
         void export_it(fstream &f);
      };
     typedef vector<Translator*> TList;

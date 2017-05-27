@@ -108,7 +108,7 @@ namespace FMM_3D{
     Z_near::Z_near(int m,int n,bool){
         M = m;
         N = n;
-        mem= new ElementType[m*n];
+        complex_data= new ComplexElementType[m*n];
     }
     /*---------------------------------------------------------------------------------------*/
     void Z_near::set_element(int,int,ElementType){//deprecated
@@ -304,11 +304,11 @@ namespace FMM_3D{
             DTBase::export_it(f);
      }
     /*---------------------------------------------------------------------------------------*/
-    Translator::Translator(uint32_t d_[],int M_, int N_, ElementType* mat){
+    Translator::Translator(int32_t d_[],int M_, int N_, ComplexElementType* mat){
         d[0]=d_[0];d[1]=d_[1];d[2]=d_[2];
         M=M_;
         N=N_;
-        data=mat;
+        complex_data=mat;
         name.assign("Translator");
         type = DTTypes::T;
         host = -1;

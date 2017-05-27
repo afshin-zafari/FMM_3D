@@ -17,14 +17,10 @@ namespace FMM_3D{
 
         for(uint32_t ii=0;ii<L;ii++)
             tree->Level.push_back(new LevelBase);
-        //tree->Level.resize(L);
-
 
         for(uint32_t i=0;i<L;i++){
             fread(&l ,sizeof(uint32_t),1,f);
             assert(l==i+1);
-            //LevelBase *ll=new LevelBase();
-            //tree->Level[i] = ll;
             fread(&nb,sizeof(uint32_t),1,f);
             tree->Level[i]->boxes.resize(nb);
             for(uint32_t ii=0;ii<nb;ii++){
@@ -73,6 +69,7 @@ namespace FMM_3D{
                     for(uint j=0;j<b1[ib1]->children_idx.size();j++){
                         int cidx=b1[ib1]->children_idx[j];
                         b1[ib1]->children.push_back(b2[cidx-1]);
+                        b2[cidx-1]->parent = b1[ib1];
                     }
                 }
             }
@@ -85,19 +82,28 @@ namespace FMM_3D{
         FILE *f=fopen(fn.c_str(),"rb");
         int L,level;
         fread(&L,sizeof(uint32_t),1,f);
-        for(int i =0; i<L;i++){
+        for(int i =0; i<L-1;i++){
             fread(&level,sizeof(uint32_t),1,f);
+            long pos= ftell(f);
+            if (level <=3)
+                continue;
             TList &t=tree->Level[level-1]->T;
-            uint32_t nd,M,N,d[3];
-            ElementType *Trans;
+            uint32_t nd,M,N;
+            int d[3];
+            ComplexElementType *Trans;
             fread(&nd,sizeof(uint32_t),1,f);
+            pos= ftell(f);
             for ( uint32_t j=0;j<nd;j++){
-                fread(&d[0],sizeof(uint32_t),3,f);
+                fread(&d[0],sizeof(int32_t),3,f);
+                pos = ftell(f);
                 fread(&M,sizeof(uint32_t),1,f);
                 fread(&N,sizeof(uint32_t),1,f);
-                Trans = new ElementType[M*N];
-                fread(Trans,sizeof(ElementType),M*N,f);
+                pos = ftell(f);
+                Trans = new ComplexElementType[M*N];
+                fread(Trans,sizeof(ComplexElementType),M*N,f);
+                pos = ftell(f);
                 t.push_back(new Translator(d, M,N,Trans));
+                (void) pos;
             }
         }
         fclose(f);
@@ -174,7 +180,7 @@ namespace FMM_3D{
             fread (&M,sizeof(uint32_t),1,f);
             fread (&N,sizeof(uint32_t),1,f);
             Z_near * Z = new Z_near(M,N,true);
-            fread (Z->data,sizeof(std::complex<ElementType>),M*N,f);
+            fread (Z->complex_data,sizeof(ComplexElementType),M*N,f);
             Box &bBox=*Level.boxes[box-1];
             bBox.edges = M;
             bBox.Z.indx.push_back(near);
@@ -191,7 +197,9 @@ namespace FMM_3D{
         nb = Level.boxes.size();
         for ( uint32_t b=0;b<nb;b++){
             Box &box = *Level.boxes[b];
-            M = box.edges;
+            M = (box.edges % 1000);
+            if ( M > 1000 )
+                M = 1000;
             N = 1;
             I_vect *I = new I_vect(M,N,true);
             for ( uint32_t i=0;i<M;i++){

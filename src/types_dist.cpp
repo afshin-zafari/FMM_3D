@@ -92,21 +92,31 @@ namespace FMM_3D{
     void FMMContext::export_tasks(string fn){
         list<DTTask *>::iterator it;
         fstream f;
-        std::cout << "No. of tasks: " << tasks.size() << std::endl;
+        int f1 = tasks.size() ;
+        cout << "---- FIRST LEVEL DT ------\n" ;
+        std::cout << "# of tasks: " << f1 << std::endl;
         std::cout << "No. of data: " << DTBase::data_count  << std::endl;
         std::cout << "No. of handles: " << DTBase::last_handle<< std::endl;
-        std::cout << "No. of MVP: " << fmm_engine->counts[MVP]<< std::endl;
-        std::cout << "No. of Interp: " << fmm_engine->counts[Interpolation_Key]<< std::endl;
-        std::cout << "No. of GTrans: " << fmm_engine->counts[Green_Translate]<< std::endl;
-        std::cout << "No. of GInter: " << fmm_engine->counts[Green_Interpolate]<< std::endl;
-        std::cout << "No. of REceiving: " << fmm_engine->counts[Receiving_Key]<< std::endl;
-        std::cout << "No. of FarField: " << fmm_engine->counts[FarField_key]<< std::endl;
+
         f.open(fn,fstream::out);
 
         for ( it= tasks.begin();it != tasks.end();it++){
             DTTask *t = *it;
             //t->export_it(f);
             t->run();
+        }
+        cout << "---- SECOND LEVEL DT ------\n" ;
+        cout << "# of tasks: " << tasks.size() - f1 << endl;
+        cout << "----  THIRD LEVEL SG -------\n";
+        cout << "#of tasks: " << mu_tasks.size() << endl;
+        for ( int i=DT_FFL; i < NUM_TASK_KEYS+1;i++){
+            if ( i == DT_FFL )
+                 cout << "--------1st DT Tasks\n" ;
+            if ( i == DT_ffl )
+                 cout << "--------2nd DT Tasks\n" ;
+            if ( i == SG_ffl )
+                 cout << "--------SG Tasks \n" ;
+            cout << "#Tasks[" << i << "] = " << counts[i] << endl;
         }
         f.close();
     }
