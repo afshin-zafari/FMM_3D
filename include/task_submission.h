@@ -11,21 +11,17 @@ namespace FMM_3D{
     typedef void (*BoxPairFcn)(string , BoxPair *);
     typedef void (*BoxFcn)(string , Box *);
     /*======================================================================*/
-    class IterationVar : public DTBase {
-    private:
-        int iter_no;
-    public:
-        IterationVar(int n):iter_no(n){
-        }
-        int get_no(){return iter_no;}
-
-    };
-    /*======================================================================*/
     class IterTask: public DTTask{
     public:
-        IterTask(){}
+        int iter;
+        static double norm_V_diff;
+        static int last_iter_no;
+        IterTask(){
+            iter = last_iter_no++;
+        }
         void finished(){
-            fmm_engine->add_task ( new IterTask () );
+            if ( norm_V_diff > 1e-6)
+                fmm_engine->add_task ( new IterTask () );
         }
         void run();
         void export_it(fstream &){}
@@ -223,6 +219,26 @@ namespace FMM_3D{
         }
     };
     /*======================================================================*/
+    class NVDTask: public DTTask {
+    public:
+        GData *d1,*d2,*d3;
+        NVDTask(GData &d1_,GData &d2_,DTTask *p){
+            d3 = &d2_;
+            d2 = &d1_;
+            d1 = nullptr;
+            key= DT_rcv;
+            parent = p;
+            p->child_count++;
+        }
+
+        void finished(){
+            if(-parent->child_count ==0)
+                parent->finished();
+        }
+        void run(){}
+        void export_it(fstream &){}
+    };
+    /*======================================================================*/
     class rcvTask: public DTTask {
     public:
         GData *d1,*d2,*d3;
@@ -264,14 +280,21 @@ namespace FMM_3D{
     /*======================================================================*/
     class NFLTask: public DTTask {
     public:
-        GData *d;
+        GData *d1,*d2;
         int group;
-        NFLTask(GData & d_,int g ):group(g){
-            d = &d_;
+        NFLTask(GData & d1_,GData &d2_,int g,DTTask *p ):group(g){
+            d1 = &d1_;
+            d2 = &d2_;
             key= DT_NFL;
+            parent = p;
+            parent->child_count ++;
         }
         void run();
         void export_it(fstream &){}
+        void finished(){
+        if(--parent->child_count ==0)
+            parent->finished();
+        }
     };
     /*======================================================================*/
     class nflTask : public DTTask {
