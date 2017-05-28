@@ -1,7 +1,9 @@
 #include "task_submission.h"
 
 namespace FMM_3D{
-    GData *mainF,*mainG,*mainV;
+    GData *mainF,*mainG,*mainV,*copyV;
+    double  IterTask::norm_V_diff  = 1e6;
+    int     IterTask::last_iter_no = 0;
     /*------------------------------------------------------------------------*/
     void fmm_taskified(){
         int np   = Parameters.part_count;
@@ -9,6 +11,7 @@ namespace FMM_3D{
         mainF    = new GData(L_max,g,np);
         mainG    = new GData(L_max,g,np);
         mainV    = new GData(L_max,g,np);
+        copyV    = new GData(L_max,g,np);
         for( int iter=0;iter<Parameters.iter_batch_count; iter++){
             fmm_engine->add_task(new IterTask());
         }
@@ -18,7 +21,9 @@ namespace FMM_3D{
         int g    = Parameters.group_count;
         GData &F = *mainF;
         GData &G = *mainG;
-        GData &V = *mainV;
+
+        GData &V  = (iter %2 ==0)?*mainV:*copyV;
+        GData &V2 = (iter %2 ==1)?*mainV:*copyV;
 
         for(int gi = 0;gi<g; gi++){
             if ( gi ==0)
@@ -47,7 +52,10 @@ namespace FMM_3D{
                 fmm_engine->add_task( new RCVTask (                G(L_max-1,gi),V(L_max-1,gi),this));
             else
                 fmm_engine->add_task( new RCVTask (G(L_max-1,gi-1),G(L_max-1,gi),V(L_max-1,gi),this));
-            fmm_engine->add_task( new NFLTask (F(L_max/2,gi),gi));
+
+            fmm_engine->add_task( new NFLTask (F(L_max/2,gi),V(L_max-1,gi),gi,this));
+
+            fmm_engine->add_task( new NVDTask (V2(L_max-1,gi),V(L_max-1,gi),this));
         }
 
     }

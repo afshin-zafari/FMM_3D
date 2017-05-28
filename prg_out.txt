@@ -1,11 +1,11 @@
 L max = 5
-finalize 55
+finalize 56
 ---- FIRST LEVEL DT ------
 # of tasks: 5
-No. of data: 29426
-No. of handles: 29426
+No. of data: 29512
+No. of handles: 29512
 ---- SECOND LEVEL DT ------
-# of tasks: 2125
+# of tasks: 2145
 ----  THIRD LEVEL SG -------
 #of tasks: 3305
 --------1st DT Tasks
@@ -21,7 +21,7 @@ No. of handles: 29426
 #Tasks[14] = 960
 #Tasks[15] = 245
 #Tasks[16] = 80
-#Tasks[17] = 80
+#Tasks[17] = 100
 --------SG Tasks 
 #Tasks[18] = 40
 #Tasks[19] = 180
