@@ -9,37 +9,44 @@ namespace FMM_3D{
         mainF    = new GData(L_max,g,np);
         mainG    = new GData(L_max,g,np);
         mainV    = new GData(L_max,g,np);
+        for( int iter=0;iter<Parameters.iter_batch_count; iter++){
+            fmm_engine->add_task(new IterTask());
+        }
+    }
+    /*------------------------------------------------------------------------*/
+    void IterTask::run(){
+        int g    = Parameters.group_count;
         GData &F = *mainF;
         GData &G = *mainG;
         GData &V = *mainV;
 
         for(int gi = 0;gi<g; gi++){
             if ( gi ==0)
-                fmm_engine->add_task( new FFLTask (              F(L_max-1,gi)));
+                fmm_engine->add_task( new FFLTask (              F(L_max-1,gi),this));
             else
-                fmm_engine->add_task( new FFLTask (F(L_max,gi-1),F(L_max-1,gi)));
+                fmm_engine->add_task( new FFLTask (F(L_max,gi-1),F(L_max-1,gi),this));
         }
         for(int L=L_max-2;L>0;L--){
             for(int gi = 0;gi<g; gi++){
                 if ( gi ==0)
-                    fmm_engine->add_task( new C2PTask (          F(L,gi),F(L-1,(L==1)?0:gi)));
+                    fmm_engine->add_task( new C2PTask (          F(L,gi),F(L-1,(L==1)?0:gi),this));
                 else
-                    fmm_engine->add_task( new C2PTask (F(L,gi-1),F(L,gi),F(L-1,(L==1)?0:gi)));
+                    fmm_engine->add_task( new C2PTask (F(L,gi-1),F(L,gi),F(L-1,(L==1)?0:gi),this));
                 for(int gj = 0;gj<g; gj++){
-                    fmm_engine->add_task( new XLTTask (F(L,gi),G(L,gj)));
+                    fmm_engine->add_task( new XLTTask (F(L,gi),G(L,gj),this));
                 }
             }
         }
         for(int L=1;L<L_max;L++){
             for(int gi = 0;gi<g; gi++){
-                fmm_engine->add_task ( new P2CTask(G(L-1,gi),G(L,gi)));
+                fmm_engine->add_task ( new P2CTask(G(L-1,gi),G(L,gi),this));
             }
         }
         for(int gi = 0;gi<g; gi++){
             if ( gi ==0)
-                fmm_engine->add_task( new RCVTask (                G(L_max-1,gi),V(L_max-1,gi)));
+                fmm_engine->add_task( new RCVTask (                G(L_max-1,gi),V(L_max-1,gi),this));
             else
-                fmm_engine->add_task( new RCVTask (G(L_max-1,gi-1),G(L_max-1,gi),V(L_max-1,gi)));
+                fmm_engine->add_task( new RCVTask (G(L_max-1,gi-1),G(L_max-1,gi),V(L_max-1,gi),this));
             fmm_engine->add_task( new NFLTask (F(L_max/2,gi),gi));
         }
 
@@ -48,7 +55,7 @@ namespace FMM_3D{
     void FFLTask::run(){
         GData &B = *d2;
         for(int i=0;i<B.part_count() ;i++){
-            fmm_engine->add_task( new fflTask(B[i]));
+            fmm_engine->add_task( new fflTask(B[i],this));
         }
     }
     /*------------------------------------------------------------------------*/
@@ -62,14 +69,21 @@ namespace FMM_3D{
                 batch->push_back(b);
             }
             else{
-                fmm_engine->add_task (new ffl_task (batch) );
+                fmm_engine->add_task (new ffl_task (batch,this) );
                 work = 0.0;
                 batch = new BoxList;
             }
         }
+        if (work >0.0 or batch->size() > 0 ){
+            fmm_engine->add_task (new ffl_task (batch,this) );
+        }
+
     }
     /*------------------------------------------------------------------------*/
-    void ffl_task::run(){//todo
+    void ffl_task::run(){
+        for_each_box_in_batch(batch,print_box,"ffl_task");
+        if ( --parent->child_count ==0)
+            parent->finished();
     }
     /*------------------------------------------------------------------------*/
     void C2PTask::run(){
@@ -81,7 +95,7 @@ namespace FMM_3D{
             if ( B.get_row() ==0 ) { // if top most level
                 j = 0;
             }
-            fmm_engine->add_task( new c2pTask(A[i],B[j]));
+            fmm_engine->add_task( new c2pTask(A[i],B[j],this));
         }
     }
     /*------------------------------------------------------------------------*/
@@ -97,14 +111,20 @@ namespace FMM_3D{
                 batch_work += get_c2p_work(parent);
             }
             else{
-                fmm_engine->add_task ( new c2p_task(batch));
+                fmm_engine->add_task ( new c2p_task(batch,this));
                 batch = new BoxList;
                 batch_work=0.0;
             }
         }
+        if ( batch_work > 0.0 or batch->size() > 0){
+            fmm_engine->add_task ( new c2p_task(batch,this));
+        }
     }
     /*------------------------------------------------------------------------*/
-    void c2p_task::run(){//todo
+    void c2p_task::run(){
+        for_each_box_in_batch(batch,print_box,"c2p_task");
+        if (--parent->child_count ==0)
+            parent->finished();
     }
     /*------------------------------------------------------------------------*/
     void XLTTask::run(){
@@ -115,7 +135,7 @@ namespace FMM_3D{
                 int n1 = A[i].boxes.size();
                 int n2 = B[j].boxes.size();
                 if (n1 != 0 and n2 != 0 ){
-                    fmm_engine->add_task( new xltTask(A[i],B[j]));
+                    fmm_engine->add_task( new xltTask(A[i],B[j],this));
                 }
             }
         }
@@ -133,29 +153,28 @@ namespace FMM_3D{
                     batch_work += get_xlt_work(f2gp);
                 }
                 if ( batch_work > Parameters.work_min){
-                    fmm_engine->add_task ( new xlt_task (batch)) ;
-                    int len = batch->size() ;
-                    cout << "Batch  len " << len << endl;
+                    fmm_engine->add_task ( new xlt_task (batch,this)) ;
                     batch = new F2GList;
                     batch_work = 0.0;
                 }
             }
         }
-        if ( batch_work > 0.0){
-            fmm_engine->add_task ( new xlt_task (batch)) ;
-            int len = batch->size() ;
-            cout << "Batch  len " << len << endl;
+        if ( batch_work > 0.0 or batch->size() >0){
+            fmm_engine->add_task ( new xlt_task (batch,this)) ;
         }
     }
     /*------------------------------------------------------------------------*/
-    void xlt_task::run(){//todo
+    void xlt_task::run(){
+        for_each_pair_in_batch(batch,print_box_pair,"xlt_task");
+        if (--parent->child_count ==0)
+            parent->finished();
     }
     /*------------------------------------------------------------------------*/
     void P2CTask::run(){
         GData &A = *d1;
         GData &B = *d2;
         for(int i=0;i<A.part_count();i++){
-            fmm_engine->add_task ( new p2cTask(A[i],B[i]));
+            fmm_engine->add_task ( new p2cTask(A[i],B[i],this));
         }
     }
     /*------------------------------------------------------------------------*/
@@ -163,38 +182,72 @@ namespace FMM_3D{
         GData &A = *d2;
         GData &B = *d3;
         for(int i=0;i<A.part_count();i++){
-            fmm_engine->add_task ( new rcvTask(A[i],B[i]));
+            fmm_engine->add_task ( new rcvTask(A[i],B[i],this));
         }
     }
     /*------------------------------------------------------------------------*/
-    void rcvTask::run(){//todo
-        fmm_engine->add_task(new rcv_task(d1,d2));
+    void rcvTask::run(){
+        double work =0.0;
+        X2YList *batch = new X2YList;
+        for( Box * b1: d2->boxes){
+            for ( Box *b2: d3->boxes){
+                work += get_rcv_work(b1);
+                if ( work < Parameters.work_min){
+                    batch->push_back(new BoxPair (b1,b2) );
+                }
+                else{
+                    fmm_engine->add_task(new rcv_task(batch,this));
+                    batch = new X2YList;
+                    work =0.0;
+                }
+            }
+        }
+        if ( work > 0 or batch->size()>0 ) {
+            fmm_engine->add_task(new rcv_task(batch,this));
+        }
+
     }
     /*------------------------------------------------------------------------*/
-    void rcv_task::run(){//todo
+    void rcv_task::run(){
+        for_each_pair_in_batch(batch,print_box_pair,"rcv_task");
+        if ( --parent->child_count ==0)
+            parent->finished();
     }
     /*------------------------------------------------------------------------*/
     void NFLTask::run(){
         for (int i=0;i<Parameters.part_count ;i++){
-            fmm_engine->add_task(new nflTask(group,i));
+            fmm_engine->add_task(new nflTask(group,i,this));
         }
     }
     /*------------------------------------------------------------------------*/
     void nflTask::run(){
-        /* for b1 in F(L_max,group)[part].boxes
-            for b2 in b1.near_field
-                add task VZI (b1,b2)
-        */
         GData &F = *mainF;
         BoxList &boxes =  F(L_max-1,group)[part].boxes;
+        double work =0.0;
+        X2YList *batch = new X2YList;
         for ( Box *b1: boxes){
             for (Box *b2 : b1->nf_int_list ){
-                fmm_engine->add_task( new nfl_task(b1->index,b2->index));
+                BoxPair * bp = new BoxPair ( b1,b2);
+                work += get_nfl_work( bp);
+                if ( work <Parameters.work_min){
+                    batch->push_back( bp);
+                }
+                else{
+                    fmm_engine->add_task( new nfl_task(batch,this));
+                    batch = new X2YList;
+                    work = 0.0;
+                }
             }
+        }
+        if(work > 0.0 or batch->size() > 0 ){
+            fmm_engine->add_task( new nfl_task(batch,this));
         }
     }
     /*------------------------------------------------------------------------*/
-    void nfl_task::run(){//todo
+    void nfl_task::run(){
+        for_each_pair_in_batch(batch,print_box_pair,"nfl_task");
+        if (--parent->child_count  ==0 )
+            parent->finished();
     }
     /*------------------------------------------------------------------------*/
     void p2cTask::run( ){
@@ -210,17 +263,20 @@ namespace FMM_3D{
                     batch_work += get_p2c_work(c);
                 }
                 else{
-                    fmm_engine->add_task ( new p2c_task(batch));
+                    fmm_engine->add_task ( new p2c_task(batch,this));
                     batch = new BoxList;
                     batch_work=0.0;
                 }
             }
         }
         if ( batch_work > 0.0)
-            fmm_engine->add_task ( new p2c_task(batch));
+            fmm_engine->add_task ( new p2c_task(batch,this));
     }
     /*------------------------------------------------------------------------*/
-    void p2c_task::run(){//todo
+    void p2c_task::run(){
+        for_each_box_in_batch(batch,print_box,"p2c_task");
+        if (--parent->child_count ==0)
+            parent->finished();
     }
     /*------------------------------------------------------------------------*/
     double get_c2p_work(Box *c){
@@ -262,9 +318,22 @@ namespace FMM_3D{
     /*----------------------------------------------------------------------*/
     double get_nfl_work(BoxPair* boxes){
         int M,N,K,P;
-        boxes->first->Z.data[boxes->second->index]->get_dims(M,N);
+        int idx = boxes->second->index-1;
+        int z = boxes->first->Z.data.size();
+        if ( idx < z ){
+            if(boxes->first->Z.data[idx])
+                boxes->first->Z.data[idx]->get_dims(M,N);
+        }
+        else{
+            M = N = 0;
+        }
+
         boxes->first->I->get_dims(K,P);
         return (double)(M*N*K)/3.0;
+    }
+    /*----------------------------------------------------------------------*/
+    double get_rcv_work(Box *c){
+        return 0.0;
     }
     /*----------------------------------------------------------------------*/
     void NFL_tasks ( GData & dep,int chunk_no, int chunks_count){
@@ -277,7 +346,7 @@ namespace FMM_3D{
         Root.boxes.push_back(TopLevel.boxes[0]);
         TopLevel.boxes[0]->group = 0;
         int L = 1;
-        for ( uint32_t gi=0;gi<ng;gi++){
+        {
             nbl = Root.boxes[0]->children.size();
             bpg = nbl/ng+1;
             for (int bi=0;bi<nbl;bi++){
@@ -342,6 +411,29 @@ namespace FMM_3D{
         return false;
     }
     /*---------------------------------------------------*/
-
+    void for_each_pair_in_batch(X2YList *b, BoxPairFcn func,string s){
+        X2YList &batch=*b;
+        for (uint32_t i=0;i<batch.size();i++){
+            func(s, batch[i]);
+        }
+    }
+    /*---------------------------------------------------*/
+    void print_box_pair(string prefix , BoxPair *bp){
+        cout << prefix << " " ;
+        cout << "B("<< bp->first->level << "," << bp->first->index <<")--B(";
+        cout << bp->second->level << "," << bp->second->index <<")\n";
+    }
+    /*---------------------------------------------------*/
+    void for_each_box_in_batch(BoxList *b, BoxFcn func,string s){
+        BoxList &batch=*b;
+        for (uint32_t i=0;i<batch.size();i++){
+            func(s,batch[i]);
+        }
+    }
+    /*---------------------------------------------------*/
+    void print_box(string prefix , Box *bp){
+        cout << prefix << " " ;
+        cout << "B("<< bp->level << "," << bp->index <<")\n";
+    }
 
 }

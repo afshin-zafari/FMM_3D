@@ -118,6 +118,9 @@ namespace FMM_3D{
                  cout << "--------SG Tasks \n" ;
             cout << "#Tasks[" << i << "] = " << counts[i] << endl;
         }
+        for ( SGTask *t: mu_tasks){
+            t->run();
+        }
         f.close();
     }
     /*----------------------------------------------------*/

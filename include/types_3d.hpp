@@ -24,6 +24,7 @@ namespace FMM_3D{
             int interp_points,m;
         };
         double work_min;
+        int iter_batch_count;
     }Parameters_t;
     extern Parameters_t Parameters;
     struct DTHandle{

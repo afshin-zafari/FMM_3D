@@ -3,6 +3,7 @@
 #include <string>
 #include <list>
 #include <fstream>
+#include <atomic>
 #include "types_3d.hpp"
 
 using namespace std;
@@ -21,12 +22,6 @@ typedef enum key {MVP,
         NUM_TASK_KEYS
     } TaskKey;
 /*--------------------------------------------------------------------*/
-class SGTask {
-public:
-    double work;
-    int key;
-    virtual void run()=0;
-};
 class DTTask
 {
 public:
@@ -34,8 +29,18 @@ public:
     std::string name;
     int axs[4];
     DTBase *args[4];
+    DTTask *parent;
+    std::atomic<size_t> child_count;
     virtual void run() = 0 ;
+    virtual void finished(){}
     virtual void export_it(fstream&)=0;
+};
+class SGTask {
+public:
+    double work;
+    int key;
+    DTTask *parent;
+    virtual void run()=0;
 };
 /*-------------------------MVP Task ------------------------------------*/
 class MVPTask : public DTTask

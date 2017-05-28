@@ -39,6 +39,7 @@ namespace FMM_3D{
         Parameters.B2 = 4;
         Parameters.group_count =  4;
         Parameters.work_min = 200*100*100/2.0;
+        Parameters.iter_batch_count = 5;
     }
     /*--------------------------------------------------------------------*/
     void init(){
